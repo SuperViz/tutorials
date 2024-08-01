@@ -8,7 +8,6 @@ import { StockPrice } from './components/stock-price'
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
 const ROOM_ID = generateId()
 
-
 export default function App() {
   const [stock, setStock] = useState('AAPL')
   const [stockList, setStockList] = useState<Stock[]>([])
@@ -76,10 +75,10 @@ export default function App() {
 
   useEffect(() => {
     initialize()
-  }, [initialize])
+  })
 
   return (
-    <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
+    <div className='w-full h-full bg-gray-200 flex flex-col'>
       <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
         <div>
           <h1 className='text-white text-2xl font-bold'>Realtime Data Dashboard</h1>
@@ -99,7 +98,7 @@ export default function App() {
           </button>
         </div>
       </header>
-      <main className='flex-1 p-20 flex w-full gap-2'>
+      <main className='p-20 px-40 flex gap-2 flex-wrap'>
         {
           stockList.map((stock) => (
             <StockPrice key={stock.symbol} stock={stock} />

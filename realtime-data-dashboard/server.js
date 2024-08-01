@@ -110,7 +110,7 @@ const interval = setInterval(async () => {
       console.error(error)
     }
   }
-}, 2000)
+}, 10000)
 
 process.on('SIGINT', () => {
   clearInterval(interval)

@@ -184,7 +184,6 @@ const interval = setInterval(async () => {
 Launch the server to listen for requests.
 
 ```jsx
-javascriptCopy code
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
 });
