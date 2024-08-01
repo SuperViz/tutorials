@@ -13,6 +13,7 @@ The tutorials in this repository are designed to help you get started with the S
 Here is a list of tutorials available in this repository:
 
 - [Step-by-Step Tutorial: Creating a Real-Time Stock Dashboard with SuperViz](https://github.com/SuperViz/tutorials/tree/main/realtime-data-dashboard)
+- [Step-by-Step Tutorial: Creating Real-Time Notifications with SuperViz](https://github.com/SuperViz/tutorials/tree/main/realtime-notifications)
 
 ### Contributing
 
