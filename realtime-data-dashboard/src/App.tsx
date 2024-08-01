@@ -1,6 +1,6 @@
 import { v4 as generateId } from 'uuid'
 import { useCallback, useEffect, useState } from "react"
-import SuperVizRoom, { Realtime, RealtimeComponentEvent, RealtimeMessage } from '@superviz/sdk'
+import SuperVizRoom, { Realtime, RealtimeComponentEvent } from '@superviz/sdk'
 import { Stock } from './common/types'
 import { StockPrice } from './components/stock-price'
 

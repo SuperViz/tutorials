@@ -23,8 +23,6 @@ app.get('/', (req, res) => {
 const subscriptions = []
 
 app.get('/subscribe', async (req, res) => {
-  console.log(req.query)
-
   if(!req.query.symbol) {
     return res.status(400).json({ error: 'Missing symbol' })
   }
@@ -62,7 +60,11 @@ app.get('/unsubscribe', (req, res) => {
     return res.status(400).json({ error: 'Missing roomId' })
   }
 
-  const index = subscriptions.findIndex(subscription => subscription.channelId === req.query.channelId)
+  if(!req.query.symbol) {
+    return res.status(400).json({ error: 'Missing symbol' })
+  }
+
+  const index = subscriptions.findIndex(subscription => subscription.roomId === req.query.roomId && subscription.symbol === req.query.symbol)
   if(index === -1) {
     return res.status(404).json({ error: 'Subscription not found' })
   }
