@@ -14,6 +14,7 @@ Here is a list of tutorials available in this repository:
 
 - [Step-by-Step Tutorial: Creating a Real-Time Stock Dashboard with SuperViz](https://github.com/SuperViz/tutorials/tree/main/realtime-data-dashboard)
 - [Step-by-Step Tutorial: Creating Real-Time Notifications with SuperViz](https://github.com/SuperViz/tutorials/tree/main/realtime-notifications)
+- [Step-by-Step Tutorial: How to build a customer support solution with real-time forms](https://github.com/SuperViz/tutorials/tree/main/customer-support)
 
 ### Contributing
 
