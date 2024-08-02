@@ -463,11 +463,5 @@ You can access the frontend application at `http://localhost:5173` and the serve
 
 In this tutorial, we've built a real-time stock dashboard using SuperViz, Express.js, and React. The server fetches stock data from Yahoo Finance and sends updates to subscribed clients using SuperViz's real-time API. The frontend subscribes to stock updates, displaying them in a responsive UI. By following these steps, you can customize the dashboard to track different stocks, add more features, and deploy it to a production environment.
 
-### Additional Resources
-
-- [SuperViz SDK Documentation](https://docs.superviz.com/sdk/realtime/channel)
-- [Yahoo Finance 2 API Documentation](https://www.npmjs.com/package/yahoo-finance2)
-- React Documentation
-- Express Documentation
 
 Feel free to refer to the full code in the [GitHub repository](https://github.com/SuperViz/tutorials/tree/main/realtime-data-dashboard) for more details.

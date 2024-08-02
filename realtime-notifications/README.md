@@ -355,10 +355,5 @@ You can access the frontend application at `http://localhost:5173` and the serve
 
 In this tutorial, we've built a real-time notification system using SuperViz, Express.js, and React. The server schedules and sends notifications to clients using SuperViz's real-time API. The frontend subscribes to notification events, displaying them as toast messages. By following these steps, you can customize the notification system to handle different types of messages, add more features, and deploy it to a production environment.
 
-### Additional Resources
-
-- SuperViz SDK Documentation: [SuperViz SDK](https://docs.superviz.com/sdk/realtime/channel)
-- React Toastify Documentation: React Toastify
-- Express Documentation: Express
 
 Feel free to refer to the full code in the [GitHub repository](https://github.com/SuperViz/tutorials/tree/main/realtime-notifications) for more details.
