@@ -1,4 +1,4 @@
-import { useCanvasPin, useComments, WhoIsOnline, Comments  } from "@superviz/react-sdk";
+import { useCanvasPin, useComments, Comments  } from "@superviz/react-sdk";
 
 export default function Room() {
 
@@ -8,7 +8,7 @@ export default function Room() {
   return (
     <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
       <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-        <h1 className='text-white text-2xl font-bold'>SuperViz Real-Time Mouse Pointers</h1>
+        <h1 className='text-white text-2xl font-bold'>SuperViz Contextual Comments</h1>
         <div id="comments" className='flex gap-2'></div>
       </header>
       <main className='flex-1 w-full h-full'>
@@ -17,7 +17,6 @@ export default function Room() {
         </div>
 
         {/* SuperViz */}
-        <WhoIsOnline position='comments' />
         <Comments 
           pin={pin} 
           position='left' 
