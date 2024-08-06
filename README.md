@@ -20,6 +20,7 @@ Here is a list of tutorials available in this repository:
 - [Step-by-Step Tutorial: How to implement real-time mouse pointers into a web-application using SuperViz React SDK](https://github.com/SuperViz/tutorials/tree/main/mouse-pointers)
 - [Step-by-Step Tutorial: How to Add a Contextual Comments Feature into a Canvas-Based Web Application](https://github.com/SuperViz/tutorials/tree/main/contextual-comments-canvas)
 - [Step-by-Step Tutorial: How to Add a Video Huddle to your web-application](https://github.com/SuperViz/tutorials/tree/main/video-huddle)
+- [Step-by-Step Tutorial: Learn how to add build a multiplayer chess game with react-chessboard and SuperViz](https://github.com/SuperViz/tutorials/tree/main/chess-game)
 
 ### Contributing
 
