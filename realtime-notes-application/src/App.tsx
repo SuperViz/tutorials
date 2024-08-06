@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { VideoConference, LauncherFacade, MousePointers, Realtime, RealtimeComponentEvent, RealtimeComponentState, RealtimeMessage } from '@superviz/sdk'
+import SuperVizRoom, { LauncherFacade, MousePointers, Realtime, RealtimeComponentEvent, RealtimeComponentState, RealtimeMessage } from '@superviz/sdk'
 import { v4 as generateId } from 'uuid'
-import { IoIosCall } from "react-icons/io";
 import { NoteNode } from "./components/note-node";
 import { Note } from "./common/types";
 
@@ -61,24 +60,12 @@ export default function App() {
 
     setInitialized(true)
     setNotes([
-      { id: 'note-1', title: 'Note 1', content: 'Content 1', x: 100, y: 100 },
-      { id: 'note-2', title: 'Note 2', content: 'Content 2', x: 100, y: 100 },
-      { id: 'note-3', title: 'Note 3', content: 'Content 3', x: 100, y: 100 },
+      { id: 'note-1', title: `Unicorn's Shopping List`, content: 'Rainbow sprinkles, cloud fluff, and pixie dust', x: 100, y: 100 },
+      { id: 'note-2', title: `Zombie's To-Do List`, content: 'Find brains, practice groaning, shuffle aimlessly', x: 100, y: 100 },
+      { id: 'note-3', title: `Alien's Earth Observations`, content: 'Humans obsessed with cat videos and avocado toast. Fascinating!', x: 100, y: 100 },
     ])
   }, [initialized, setNotes])
 
-  const initializeVideo = useCallback(() => { 
-    if(!initialized || !superviz.current) return
-
-    const video = new VideoConference({
-      participantType: 'host',
-      collaborationMode: { 
-        enabled: true,
-      }
-    })
-
-    superviz.current.addComponent(video)
-  }, [initialized])
 
   const handleNoteChange = useCallback((note: Note) => {
     setNotes((prevNotes) => {
@@ -104,10 +91,7 @@ export default function App() {
     <>
       <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
         <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-          <h1 className='text-white text-2xl font-bold'>Video Huddle</h1>
-          <button className="rounded-full bg-green-400 p-3 text-white text-lg" onClick={initializeVideo}>
-            <IoIosCall />
-          </button>
+          <h1 className='text-white text-2xl font-bold'>Real-Time Sync</h1>
         </header>
         <main id="mouse-container" className='flex-1 p-20 flex w-full gap-2 items-center justify-center overflow-hidden'>
           {

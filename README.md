@@ -15,7 +15,7 @@ Here is a list of tutorials available in this repository:
 - [Step-by-Step Tutorial: Creating a Real-Time Stock Dashboard with SuperViz](https://github.com/SuperViz/tutorials/tree/main/realtime-data-dashboard)
 - [Step-by-Step Tutorial: Creating Real-Time Notifications with SuperViz](https://github.com/SuperViz/tutorials/tree/main/realtime-notifications)
 - [Step-by-Step Tutorial: How to build a customer support solution with real-time forms](https://github.com/SuperViz/tutorials/tree/main/customer-support)
-- [Step-by-Step Tutorial: How to Add a Video Huddle to your web-application](https://github.com/SuperViz/tutorials/tree/main/video-huddle-application)
+- [Step-by-Step Tutorial: How to add real-time synchronization to your web-application](https://github.com/SuperViz/tutorials/tree/main/realtime-notes-application)
 - [Step-by-Step Tutorial: Learn how to add real-time synchronization to a React Flow application](https://github.com/SuperViz/tutorials/tree/main/realtime-react-flow)
 - [Step-by-Step Tutorial: How to implement real-time mouse pointers into a web-application using SuperViz React SDK](https://github.com/SuperViz/tutorials/tree/main/realtime-mouse-pointers)
 - [Step-by-Step Tutorial: How to Add a Contextual Comments Feature into a Canvas-Based Web Application](https://github.com/SuperViz/tutorials/tree/main/contextual-comments-canvas)
