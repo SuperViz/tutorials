@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { LauncherFacade, MousePointers, Realtime, RealtimeComponentEvent, RealtimeComponentState, RealtimeMessage } from '@superviz/sdk'
+import SuperVizRoom, { LauncherFacade, MousePointers, Realtime, RealtimeComponentEvent, RealtimeComponentState, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
 import { v4 as generateId } from 'uuid'
 import { NoteNode } from "./components/note-node";
 import { Note } from "./common/types";
@@ -55,14 +55,16 @@ export default function App() {
     })
 
     const mousePointers = new MousePointers('mouse-container')
+    const whoIsOnline = new WhoIsOnline()
     superviz.current.addComponent(mousePointers)
     superviz.current.addComponent(realtime)
+    superviz.current.addComponent(whoIsOnline)  
 
     setInitialized(true)
     setNotes([
-      { id: 'note-1', title: `Unicorn's Shopping List`, content: 'Rainbow sprinkles, cloud fluff, and pixie dust', x: 100, y: 100 },
-      { id: 'note-2', title: `Zombie's To-Do List`, content: 'Find brains, practice groaning, shuffle aimlessly', x: 100, y: 100 },
-      { id: 'note-3', title: `Alien's Earth Observations`, content: 'Humans obsessed with cat videos and avocado toast. Fascinating!', x: 100, y: 100 },
+      { id: 'note-1', title: `Unicorn's Shopping List`, content: 'Rainbow sprinkles, cloud fluff, and pixie dust', x: 20, y: 50 },
+      { id: 'note-2', title: `Zombie's To-Do List`, content: 'Find brains, practice groaning, shuffle aimlessly', x: 20, y: 50 },
+      { id: 'note-3', title: `Alien's Earth Observations`, content: 'Humans obsessed with cat videos and avocado toast. Fascinating!', x: 20, y: 50 },
     ])
   }, [initialized, setNotes])
 
