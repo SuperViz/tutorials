@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@superviz/sdk':
-        specifier: ^6.5.0
-        version: 6.5.0
+        specifier: ^6.5.3
+        version: 6.5.3
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -460,8 +460,8 @@ packages:
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
 
-  '@superviz/sdk@6.5.0':
-    resolution: {integrity: sha512-sNErArYItRROR2a9cfznu4YBxxwuxr8XYCt6TrFS327bGyNlFW4ztbiKrJKGbZVQ162JzsTWwEbeMtwkMKJ0hA==}
+  '@superviz/sdk@6.5.3':
+    resolution: {integrity: sha512-RLhUGUz314v4wOfViWZLzqHW9d0tCaKoURyZdo+xEgVxEB0eGdbtz/lUCDRbenyUfweLhkOj+xovH54m5HVr6w==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -1834,7 +1834,7 @@ snapshots:
 
   '@socket.io/component-emitter@3.1.2': {}
 
-  '@superviz/sdk@6.5.0':
+  '@superviz/sdk@6.5.3':
     dependencies:
       bowser: 2.11.0
       bowser-jr: 1.0.6
