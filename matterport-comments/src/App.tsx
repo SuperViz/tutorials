@@ -8,7 +8,7 @@ import type { MpSdk } from '@superviz/matterport-plugin/dist/common/types/matter
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
 const matterportKey = import.meta.env.VITE_MATTERPORT_KEY as string
 
-const ROOM_ID = 'matterport-sales-tool'
+const ROOM_ID = 'matterport-comments'
 const PLAYER_ID = generateId()
 
 interface MatterportIframe extends HTMLIFrameElement {
@@ -30,8 +30,8 @@ export default function App() {
         name: 'player-name',
       },
       group: { 
-        id: 'matterport-sales-tool',
-        name: 'matterport-sales-tool',
+        id: 'matterport-comments',
+        name: 'matterport-comments',
       }
     })
 

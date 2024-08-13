@@ -1,6 +1,6 @@
 import { v4 as generateId } from 'uuid'
 import { useCallback, useEffect, useRef } from "react"
-import SuperVizRoom, { Comments, VideoConference } from '@superviz/sdk'
+import SuperVizRoom, { VideoConference } from '@superviz/sdk'
 import { Presence3D } from '@superviz/matterport-plugin'
 // @ts-expect-error TODO: fix types
 import type { MpSdk } from '@superviz/matterport-plugin/dist/common/types/matterport.types.d.ts'
