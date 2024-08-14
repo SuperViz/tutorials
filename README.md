@@ -26,6 +26,7 @@ Here is a list of tutorials available in this repository:
 - [Step-by-Step Tutorial: How to add contextual comments to Matterport SDK](https://github.com/SuperViz/tutorials/tree/main/matterport-comments)
 - [Step-by-Step Tutorial: Build real-time collaboration features into Three.js](https://github.com/SuperViz/tutorials/tree/main/three-js)
 - [Step-by-Step Tutorial: How to add real-time who is online feature to your web-application](https://github.com/SuperViz/tutorials/tree/main/who-is-online)
+- [Step-by-Step Tutorial: Learn how to build a real-time chat](https://github.com/SuperViz/tutorials/tree/main/realtime-chat)
 
 ### Contributing
 
