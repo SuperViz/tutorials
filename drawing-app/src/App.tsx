@@ -1,6 +1,6 @@
 import { v4 as generateId } from 'uuid'
 import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { LauncherFacade, Participant, ParticipantEvent, Realtime, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
+import SuperVizRoom, { LauncherFacade, MousePointers, Participant, ParticipantEvent, Realtime, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
 import { Board } from './components/board'
 import { BoardState } from './types/global.types'
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
@@ -78,6 +78,9 @@ export default function App() {
 
       if(!ready && participant.slot?.index !== 0) { 
         setReady(true)
+
+        const mousePointers = new MousePointers('board-container')
+        superviz.current?.addComponent(mousePointers)
       }
     })
   }, [handleRealtimeMessage, initialized, ready])
@@ -87,7 +90,7 @@ export default function App() {
       <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
         <h1 className='text-white text-2xl font-bold'>SuperViz Drawing App</h1>
       </header>
-      <main ref={contentRef} className='w-full h-full flex items-center justify-center'>
+      <main ref={contentRef} className='w-full h-full flex items-center justify-center' id='board-container'>
         {
           ready && (
             <Board
