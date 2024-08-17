@@ -1,0 +1,26 @@
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
+}
+
+body {
+  @apply bg-gray-900;
+}
+
+.tabs-active {
+  @apply inline-flex items-center px-4 py-3 text-white bg-blue-900 rounded-lg w-full dark:bg-blue-600 cursor-pointer;
+}
+
+.tabs-inactive {
+  @apply inline-flex items-center px-4 py-3 rounded-lg hover:text-gray-900 bg-gray-50 hover:bg-gray-100 w-full dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-white cursor-pointer;
+}
