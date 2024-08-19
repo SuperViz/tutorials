@@ -15,17 +15,22 @@ app.use(cors())
 const superVizHost = 'https://nodeapi.superviz.com'
 const clientId = process.env.SUPERVIZ_CLIENT_ID
 const clientSecret = process.env.SUPERVIZ_CLIENT_SECRET
-const apiKey = process.env.SUPERVIZ_API_KEY
+const environment = process.env.SUPERVIZ_ENVIRONMENT
 
 const client = axios.create({
   baseURL: superVizHost,
+  headers: {
+    client_id: clientId,
+    secret: clientSecret,
+  },
 })
+
 
 app.get('/participants', async (_, res) => {
   try {
     const response = await client.get('/participants', {
-      headers: {
-        apiKey
+      params: {
+        environment
       }
     })
 
@@ -43,11 +48,8 @@ app.post('/participants', async (req, res) => {
       participantId: id,
       name,
       email,
-      avatar
-    }, {
-      headers: {
-        apiKey
-      }
+      avatar,
+      environment
     })
 
     res.json(response.data)
@@ -64,13 +66,8 @@ app.patch('/participants', async (req, res) => {
       participantId: id,
       name,
       email,
-      avatar
-    }, {
-      headers: {
-        client_id: clientId,
-        secret: clientSecret,
-        apiKey
-      }
+      avatar,
+      environment
     })
 
     res.json(response.data)
@@ -84,10 +81,8 @@ app.delete('/participants', async (req, res) => {
   try {
     const { id } = req.body
     const response = await client.put(`/participants/${id}/archive`, {}, {
-      headers: {
-        client_id: clientId,
-        secret: clientSecret,
-        apiKey
+      params: {
+        environment
       }
     })
 
@@ -101,8 +96,8 @@ app.delete('/participants', async (req, res) => {
 app.get('/groups' , async (_, res) => {
   try {
     const response = await client.get('/groups', {
-      headers: {
-        apiKey
+      params: {
+        environment
       }
     })
 
@@ -117,13 +112,8 @@ app.patch('/groups', async (req, res) => {
   try {
     const { id, name } = req.body
     const response = await client.put(`/groups/${id}`, {
-      name
-    }, {
-      headers: {
-        client_id: clientId,
-        secret: clientSecret,
-        apiKey
-      }
+      name,
+      environment
     })
 
     res.json(response.data)
@@ -138,10 +128,8 @@ app.delete('/groups', async (req, res) => {
     const { id } = req.body
     console.log(id)
     const response = await client.put(`/groups/${id}/archive`, {}, {
-      headers: {
-        client_id: clientId,
-        secret: clientSecret,
-        apiKey
+      params: {
+        environment
       }
     })
 
@@ -156,6 +144,6 @@ process.on('SIGINT', () => {
   process.exit()
 })
 
-app.listen(5000, () => {
-  console.log('Server is running on http://localhost:5000')
+app.listen(3001, () => {
+  console.log('Server is running on http://localhost:3001')
 })

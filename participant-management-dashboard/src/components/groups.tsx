@@ -4,22 +4,27 @@ import { Group } from '../common/types'
 import EditGroups from './edit-groups'
 import CreateGroup from './create-group'
 import Delete from './delete'
+import { FaSpinner } from 'react-icons/fa'
 
 export default function TabGroups() {
   const [groups, setGroups] = useState<Group[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const populateGroups = async (): Promise<void> => {
+    setIsLoading(true)
     try {
-      const response = await axios.get('http://localhost:5000/groups')
+      const response = await axios.get('http://localhost:3001/groups')
       setGroups(response.data.data)
     } catch (error) {
       console.error(error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const deleteGroup = async (id: string): Promise<void> => {
     try {
-      await axios.delete(`http://localhost:5000/groups`, { data: { id } })
+      await axios.delete(`http://localhost:3001/groups`, { data: { id } })
       populateGroups()
     } catch (error) {
       console.error(error)
@@ -30,11 +35,31 @@ export default function TabGroups() {
     populateGroups()
   }, [])
 
+  if (isLoading) {
+    return (
+      <div className='flex justify-center items-center h-screen w-full'>
+        <div className='animate-spin text-purple-500'>
+          <FaSpinner size={20} />
+        </div>
+      </div>
+    )
+  }
+
+  if (groups.length === 0) {
+    return (
+      <div className='text-center py-10 w-full h-screen flex items-center justify-center flex-col'>
+        <h2 className='text-2xl font-semibold text-gray-600'>No groups found</h2>
+        <p className='text-gray-500 mt-2'>Add a new group to get started.</p>
+        <CreateGroup updated={populateGroups} />
+      </div>
+    )
+  }
+
   return (
-    <div className='relative overflow-x-auto shadow-md sm:rounded-lg'>
+    <div className='relative overflow-x-auto shadow-md sm:rounded-lg w-full'>
       <CreateGroup updated={populateGroups} />
-      <table className='w-full text-sm text-left text-gray-500 dark:text-gray-400'>
-        <thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'>
+      <table className='w-full text-sm text-left text-gray-500'>
+        <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
           <tr>
             <th scope='col' className='px-6 py-3'>
               ID
@@ -52,7 +77,7 @@ export default function TabGroups() {
         </thead>
         <tbody>
           {groups.map((group) => (
-            <tr key={group.id} className='bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'>
+            <tr key={group.id} className='bg-white border-b hover:bg-gray-50'>
               <td className='px-6 py-4'>{group.id}</td>
               <td className='px-6 py-4'>{group.name}</td>
               <td className='px-6 py-4'>{group.createdAt}</td>
