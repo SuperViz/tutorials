@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { LauncherFacade, MousePointers, Realtime, RealtimeComponentEvent, RealtimeComponentState, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
+import SuperVizRoom, { Channel, LauncherFacade, MousePointers, Realtime, RealtimeComponentEvent, RealtimeComponentState, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
 import { v4 as generateId } from 'uuid'
 import { NoteNode } from "./components/note-node";
 import { Note } from "./common/types";
@@ -13,30 +13,31 @@ export default function App() {
   const [initialized, setInitialized] = useState(false)
   const [notes, setNotes] = useState<Note[]>([])
   const superviz = useRef<LauncherFacade | null>(null)
-  const channel = useRef<any | null>(null)
+  const channel = useRef<Channel | null>(null)
 
   const initialize = useCallback(async () => { 
     if(initialized) return
+
+    const url = new URL(window.location.href);
+    const name = url.searchParams.get('name') || 'Anonymous';
 
     superviz.current = await SuperVizRoom(apiKey, {
       roomId: ROOM_ID,
       participant: { 
         id: PARTICIPANT_ID,
-        name: 'my participant',
+        name: name,
       },
       group: { 
-        id: 'video-huddle-application',
-        name: 'video-huddle-application',
+        id: 'realtime-sync',
+        name: 'realtime-sync',
       }, 
-      environment: 'dev',
-      debug: true,
     })
 
     const realtime = new Realtime()
-    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, (state) => { 
+    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, async (state) => { 
       if(state !== RealtimeComponentState.STARTED) return
 
-      channel.current = realtime.connect('video-huddle-application')
+      channel.current = await realtime.connect('realtime-sync')
       channel.current.subscribe('note-change', (event: RealtimeMessage) => {
         const note = event.data as Note
 
@@ -95,7 +96,7 @@ export default function App() {
         <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
           <h1 className='text-white text-2xl font-bold'>Real-Time Sync</h1>
         </header>
-        <main id="mouse-container" className='flex-1 p-20 flex w-full gap-2 items-center justify-center overflow-hidden'>
+        <main id="mouse-container" className='flex-1 p-20 flex w-full gap-2 items-center justify-center overflow-hidden bg-canvas-background'>
           {
             notes.map((note, index) => (
               <NoteNode key={index} note={note} onChange={handleNoteChange} />
