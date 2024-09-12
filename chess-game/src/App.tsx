@@ -1,6 +1,6 @@
 import { v4 as generateId } from 'uuid'
 import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { Realtime, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
+import SuperVizRoom, { Realtime, Channel, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
 import { Chessboard } from "react-chessboard";
 import { Chess, Square } from 'chess.js';
 
@@ -20,7 +20,7 @@ export default function App() {
   const [gameState, setGameState] = useState<Chess>(new Chess())
   const [gameFen, setGameFen] = useState<string>(gameState.fen())
 
-  const channel = useRef<any | null>(null)
+  const channel = useRef<Channel | null>(null)
 
   useEffect(() => {
     initialize()
@@ -45,7 +45,7 @@ export default function App() {
     const result = makeMove(sourceSquare, targetSquare)
 
     if(result) { 
-      channel.current.publish('new-move', {
+      channel.current?.publish('new-move', {
         sourceSquare,
         targetSquare,
       })
@@ -84,8 +84,8 @@ export default function App() {
 
     setInitialized(true)
 
-    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => { 
-      channel.current = realtime.connect('move-topic')
+    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, async () => { 
+      channel.current = await realtime.connect('move-topic')
 
       channel.current.subscribe('new-move', handleRealtimeMessage)
     })
