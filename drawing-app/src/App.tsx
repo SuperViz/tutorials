@@ -1,15 +1,11 @@
 import { v4 as generateId } from 'uuid'
 import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { LauncherFacade, MousePointers, Participant, ParticipantEvent, Realtime, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
+import SuperVizRoom, { Channel, LauncherFacade, MousePointers, Participant, ParticipantEvent, Realtime, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk'
 import { Board } from './components/board'
 import { BoardState } from './types/global.types'
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
 const ROOM_ID = 'drawing-app'
 const PLAYER_ID = generateId()
-
-type BoardStateMessage = RealtimeMessage & {
-  data: BoardState
-}
 
 export default function App() {
   const [initialized, setInitialized] = useState(false)
@@ -23,7 +19,7 @@ export default function App() {
   })
 
   const contentRef = useRef<HTMLDivElement | null>(null)
-  const channel = useRef<any | null>(null)
+  const channel = useRef<Channel | null>(null)
   const superviz = useRef<LauncherFacade | null>(null)
 
   useEffect(() => {
@@ -31,7 +27,7 @@ export default function App() {
   }, [])
 
 
-  const handleRealtimeMessage = useCallback((message: BoardStateMessage) => {
+  const handleRealtimeMessage = useCallback((message: RealtimeMessage<BoardState>) => {
     if(message.participantId === PLAYER_ID) return
 
     setState(message.data)
@@ -48,11 +44,14 @@ export default function App() {
   const initialize = useCallback(async () => { 
     if(initialized) return
 
+    const url = new URL(window.location.href);
+    const name = url.searchParams.get('name') || 'Anonymous';
+
     superviz.current = await SuperVizRoom(apiKey, {
       roomId: ROOM_ID,
       participant: { 
         id: PLAYER_ID,
-        name: 'player-name',
+        name,
       },
       group: { 
         id: 'drawing-app',
@@ -68,9 +67,9 @@ export default function App() {
 
     setInitialized(true)
 
-    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => { 
-      channel.current = realtime.connect('board-topic')
-      channel.current.subscribe('update-state', handleRealtimeMessage)
+    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, async () => { 
+      channel.current = await realtime.connect('board-topic')
+      channel.current.subscribe<BoardState>('update-state', handleRealtimeMessage)
     })
 
     superviz.current?.subscribe(ParticipantEvent.LOCAL_UPDATED, (participant: Participant) => {
