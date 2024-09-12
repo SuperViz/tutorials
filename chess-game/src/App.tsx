@@ -8,11 +8,9 @@ const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
 const ROOM_ID = 'chess-game'
 const PLAYER_ID = generateId()
 
-type ChessMessageUpdate = RealtimeMessage & {
-  data: {
-    sourceSquare: Square
-    targetSquare: Square
-  }
+type ChessMessageUpdate = {
+  sourceSquare: Square
+  targetSquare: Square
 }
 
 export default function App() {
@@ -54,7 +52,7 @@ export default function App() {
     return result
   }
 
-  const handleRealtimeMessage = useCallback((message: ChessMessageUpdate) => {
+  const handleRealtimeMessage = useCallback((message: RealtimeMessage<ChessMessageUpdate>) => {
     if(message.participantId === PLAYER_ID) return
 
     const { sourceSquare, targetSquare } = message.data
@@ -87,7 +85,7 @@ export default function App() {
     realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, async () => { 
       channel.current = await realtime.connect('move-topic')
 
-      channel.current.subscribe('new-move', handleRealtimeMessage)
+      channel.current.subscribe<ChessMessageUpdate>('new-move', handleRealtimeMessage)
     })
   }, [handleRealtimeMessage, initialized])
 
