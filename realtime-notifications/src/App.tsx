@@ -32,8 +32,8 @@ export default function App() {
     superviz.addComponent(realtime)
     setInitialized(true)
 
-    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => { 
-      const channel = realtime.connect('notification-topic')
+    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, async () => { 
+      const channel = await realtime.connect('notification-topic')
 
       channel.subscribe('new-notification', (data) => {
         console.log('new event:', data)
@@ -85,8 +85,8 @@ export default function App() {
   return (
     <>
       <ToastContainer />
-      <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-        <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
+      <div className='w-full h-full bg-[#e9e5ef] flex items-center justify-center flex-col'>
+        <header className='w-full p-5 bg-[#39363e] flex items-center justify-between'>
           <h1 className='text-white text-2xl font-bold'>Realtime Notifications</h1>
         </header>
         <main className='flex-1 p-20 flex w-full gap-2 items-center justify-center'>
@@ -123,7 +123,7 @@ export default function App() {
             <button 
               type='button'
               onClick={notify}
-              className='bg-purple-400 text-white p-3 rounded-md disabled:bg-gray-300'
+              className='bg-[#39363e] text-white p-3 rounded-md disabled:bg-gray-300'
               disabled={!message || !initialized || msToWait < 1000}
             >
               Send Notification
