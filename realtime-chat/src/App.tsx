@@ -14,9 +14,12 @@ type Message = RealtimeMessage & {
 }
 
 export default function App() {
+  const url = new URL(window.location.href);
+  const name = url.searchParams.get('name') || 'Anonymous';
+
   const participant = useRef({
     id: generateId(),
-    name: 'participant-name',
+    name: name,
   })
   const channel = useRef<any | null>(null)
   const [initialized, setInitialized] = useState(false)
@@ -33,7 +36,6 @@ export default function App() {
         id: 'realtime-chat',
         name: 'realtime-chat',
       }, 
-      environment: 'dev',
     })
 
     const realtime = new Realtime()
@@ -66,17 +68,17 @@ export default function App() {
   }, [])
 
   return (
-    <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
+    <div className='w-full h-full bg-[#e9e5ef] flex items-center justify-center flex-col'>
       <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
         <h1 className='text-white text-2xl font-bold'>Realtime Chat</h1>
       </header>
       <main className='flex-1 flex w-full flex-col overflow-hidden'>
-        <div className='flex-1 bg-gray-300 w-full p-2'>
+        <div className='flex-1 bg-[#e9e5ef] w-full p-2'>
           {
             messages.map((message) => (
               <div className={`${message.participantId === participant.current!.id ? 'justify-end' : 'justify-start'} w-full flex mb-2`}>
-                <div className={`${message.participantId === participant.current!.id ? 'bg-purple-200' : 'bg-blue-300'} text-black p-2 rounded-lg max-w-xs`}>
-                  <div className={`${message.participantId === participant.current!.id ? 'text-right' : 'text-left'} text-xs text-gray-500`}>
+                <div className={`${message.participantId === participant.current!.id ? 'bg-[#f29ee8]' : 'bg-[#baa9ff]'} text-black p-2 rounded-lg max-w-xs`}>
+                  <div className={`${message.participantId === participant.current!.id ? 'text-right' : 'text-left'} text-xs text-[#57535f]`}>
                     {message.participantId === participant.current!.id ? 'You' : message.data.participantName}
                   </div>
                   {message.data.message}
