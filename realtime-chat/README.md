@@ -122,7 +122,6 @@ const initialize = useCallback(async () => {
       id: 'realtime-chat',
       name: 'realtime-chat',
     },
-    environment: 'dev',
   });
 
   const realtime = new Realtime();
