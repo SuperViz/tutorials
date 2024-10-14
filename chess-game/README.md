@@ -12,9 +12,9 @@ To begin, you'll need to set up a new React project where we will integrate the 
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
-```jsx
+```bash
 npm create vite@latest chess-game -- --template react-ts
 cd chess-game
 ```
@@ -51,11 +51,16 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using SuperViz to manage the collaborative environment.
 
 ```tsx
-import { v4 as generateId } from 'uuid';
+import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useRef, useState } from "react";
-import SuperVizRoom, { Realtime, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk';
+import SuperVizRoom, {
+  Realtime,
+  RealtimeComponentEvent,
+  RealtimeMessage,
+  WhoIsOnline,
+} from "@superviz/sdk";
 import { Chessboard } from "react-chessboard";
-import { Chess, Square } from 'chess.js';
+import { Chess, Square } from "chess.js";
 ```
 
 **Explanation:**
@@ -68,7 +73,7 @@ Define constants for the API key, room ID, and player ID.
 
 ```tsx
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-const ROOM_ID = 'chess-game';
+const ROOM_ID = "chess-game";
 const PLAYER_ID = generateId();
 ```
 
@@ -83,17 +88,17 @@ const PLAYER_ID = generateId();
 Create a type for handling chess move messages.
 
 ```tsx
-type ChessMessageUpdate = RealtimeMessage & {
+type ChessMessageUpdate = RealtimeMessage<{
   data: {
     sourceSquare: Square;
     targetSquare: Square;
   };
-};
+}>;
 ```
 
 **Explanation:**
 
-- **ChessMessageUpdate:** Extends the `RealtimeMessage` to include the source and target squares for a chess move.
+- **ChessMessageUpdate:** Instantiates a specialization of the `RealtimeMessage` to define the source and target squares for a chess move.
 
 ### 4. Create the App Component
 
@@ -127,12 +132,12 @@ const initialize = useCallback(async () => {
     roomId: ROOM_ID,
     participant: {
       id: PLAYER_ID,
-      name: 'player-name',
+      name: "player-name",
     },
     group: {
-      id: 'chess-game',
-      name: 'chess-game',
-    }
+      id: "chess-game",
+      name: "chess-game",
+    },
   });
 
   const realtime = new Realtime();
@@ -144,9 +149,9 @@ const initialize = useCallback(async () => {
   setInitialized(true);
 
   realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => {
-    channel.current = realtime.connect('move-topic');
+    channel.current = realtime.connect("move-topic");
 
-    channel.current.subscribe('new-move', handleRealtimeMessage);
+    channel.current.subscribe("new-move", handleRealtimeMessage);
   });
 }, [handleRealtimeMessage, initialized]);
 ```
@@ -162,20 +167,23 @@ const initialize = useCallback(async () => {
 Create a function to handle chess moves and update the game state.
 
 ```tsx
-const makeMove = useCallback((sourceSquare: Square, targetSquare: Square) => {
-  try {
-    const gameCopy = gameState;
-    gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: 'q' });
+const makeMove = useCallback(
+  (sourceSquare: Square, targetSquare: Square) => {
+    try {
+      const gameCopy = gameState;
+      gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
 
-    setGameState(gameCopy);
-    setGameFen(gameCopy.fen());
+      setGameState(gameCopy);
+      setGameFen(gameCopy.fen());
 
-    return true;
-  } catch (error) {
-    console.log('Invalid Move', error);
-    return false;
-  }
-}, [gameState]);
+      return true;
+    } catch (error) {
+      console.log("Invalid Move", error);
+      return false;
+    }
+  },
+  [gameState]
+);
 ```
 
 **Explanation:**
@@ -192,7 +200,7 @@ const onPieceDrop = (sourceSquare: Square, targetSquare: Square) => {
   const result = makeMove(sourceSquare, targetSquare);
 
   if (result) {
-    channel.current.publish('new-move', {
+    channel.current.publish("new-move", {
       sourceSquare,
       targetSquare,
     });
@@ -211,12 +219,15 @@ const onPieceDrop = (sourceSquare: Square, targetSquare: Square) => {
 Create a function to handle incoming real-time messages for moves made by other players.
 
 ```tsx
-const handleRealtimeMessage = useCallback((message: ChessMessageUpdate) => {
-  if (message.participantId === PLAYER_ID) return;
+const handleRealtimeMessage = useCallback(
+  (message: ChessMessageUpdate) => {
+    if (message.participantId === PLAYER_ID) return;
 
-  const { sourceSquare, targetSquare } = message.data;
-  makeMove(sourceSquare, targetSquare);
-}, [makeMove]);
+    const { sourceSquare, targetSquare } = message.data;
+    makeMove(sourceSquare, targetSquare);
+  },
+  [makeMove]
+);
 ```
 
 **Explanation:**
@@ -243,15 +254,17 @@ Return the JSX structure for rendering the application, including the chessboard
 
 ```tsx
 return (
-  <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-    <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-      <h1 className='text-white text-2xl font-bold'>SuperViz Chess Game</h1>
+  <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+    <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+      <h1 className="text-white text-2xl font-bold">SuperViz Chess Game</h1>
     </header>
-    <main className='w-full h-full flex items-center justify-center'>
-      <div className='w-[500px] h-[500px] shadow-sm border-2 border-gray-300 rounded-md'>
+    <main className="w-full h-full flex items-center justify-center">
+      <div className="w-[500px] h-[500px] shadow-sm border-2 border-gray-300 rounded-md">
         <Chessboard position={gameFen} onPieceDrop={onPieceDrop} />
-        <div className='w-[500px] h-[50px] bg-gray-300 flex items-center justify-center'>
-          <p className='text-gray-800 text-2xl font-bold'>Turn: {gameState.turn() === 'b' ? 'Black' : 'White'}</p>
+        <div className="w-[500px] h-[50px] bg-gray-300 flex items-center justify-center">
+          <p className="text-gray-800 text-2xl font-bold">
+            Turn: {gameState.turn() === "b" ? "Black" : "White"}
+          </p>
         </div>
       </div>
     </main>
@@ -272,15 +285,15 @@ return (
 Here's a quick overview of how the project structure supports a multiplayer chess game:
 
 1. **`App.tsx`**
-    - Initializes the SuperViz environment.
-    - Sets up participant information and room details.
-    - Handles real-time synchronization for chess moves.
+   - Initializes the SuperViz environment.
+   - Sets up participant information and room details.
+   - Handles real-time synchronization for chess moves.
 2. **Chessboard**
-    - Displays the chessboard and manages piece movements.
-    - Integrates real-time communication to synchronize moves between players.
+   - Displays the chessboard and manages piece movements.
+   - Integrates real-time communication to synchronize moves between players.
 3. **Chess Logic**
-    - Uses `chess.js` to manage game rules and validate moves.
-    - Updates the game state and FEN string to reflect the current board position.
+   - Uses `chess.js` to manage game rules and validate moves.
+   - Updates the game state and FEN string to reflect the current board position.
 
 ---
 
@@ -291,7 +304,7 @@ Here's a quick overview of how the project structure supports a multiplayer ches
 To run your application, use the following command in your project directory:
 
 ```bash
-npm start
+npm run dev
 ```
 
 This command will start the development server and open your application in the default web browser. You can interact with the chessboard and see moves in real-time as other participants join the session.
