@@ -1,44 +1,44 @@
-import process from "node:process"
+import process from "node:process";
 
-import express from 'express'
-import bodyParser from "body-parser"
-import dotenv from "dotenv"
-import cors from 'cors'
+import express from "express";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import cors from "cors";
 
-import yahooFinance from "yahoo-finance2"
+import yahooFinance from "yahoo-finance2";
 
+dotenv.config();
+const app = express();
 
-dotenv.config()
-const app = express()
+app.use(bodyParser.json());
+app.use(cors());
 
-app.use(bodyParser.json())
-app.use(cors())
+app.get("/", (req, res) => {
+  res.send(
+    JSON.stringify({
+      uptime: process.uptime(),
+    })
+  );
+});
 
-app.get('/', (req, res) => {
-  res.send(JSON.stringify({
-    uptime: process.uptime(),
-  }))
-})
+const subscriptions = [];
 
-const subscriptions = []
-
-app.get('/subscribe', async (req, res) => {
-  if(!req.query.symbol) {
-    return res.status(400).json({ error: 'Missing symbol' })
+app.get("/subscribe", async (req, res) => {
+  if (!req.query.symbol) {
+    return res.status(400).json({ error: "Missing symbol" });
   }
 
   try {
-    const response = await yahooFinance.quote(req.query.symbol)
+    const response = await yahooFinance.quote(req.query.symbol);
 
-    if(!response) {
-      return res.status(404).json({ error: 'Symbol not found' })
+    if (!response) {
+      return res.status(404).json({ error: "Symbol not found" });
     }
 
-    subscriptions.push({ 
-      roomId: req.query.roomId, 
-      symbol: req.query.symbol 
-    })
-  
+    subscriptions.push({
+      symbol: req.query.symbol,
+    });
+
     return res.json({
       symbol: response.symbol,
       name: response.shortName,
@@ -48,37 +48,34 @@ app.get('/subscribe', async (req, res) => {
       high: response.regularMarketDayHigh,
       low: response.regularMarketDayLow,
       updatedAt: new Date().toISOString(),
-    })
+    });
   } catch (error) {
-    return res.status(500).json({ error: error.toString() })    
+    return res.status(500).json({ error: error.toString() });
   }
-})
+});
 
-
-app.get('/unsubscribe', (req, res) => {
-  if(!req.query.roomId) {
-    return res.status(400).json({ error: 'Missing roomId' })
-  }
-
-  if(!req.query.symbol) {
-    return res.status(400).json({ error: 'Missing symbol' })
+app.get("/unsubscribe", (req, res) => {
+  if (!req.query.symbol) {
+    return res.status(400).json({ error: "Missing symbol" });
   }
 
-  const index = subscriptions.findIndex(subscription => subscription.roomId === req.query.roomId && subscription.symbol === req.query.symbol)
-  if(index === -1) {
-    return res.status(404).json({ error: 'Subscription not found' })
+  const index = subscriptions.findIndex(
+    (subscription) => subscription.symbol === req.query.symbol
+  );
+  if (index === -1) {
+    return res.status(404).json({ error: "Subscription not found" });
   }
 
-  subscriptions.splice(index, 1)
-  return res.json({ message: 'Subscription removed' })
-})
+  subscriptions.splice(index, 1);
+  return res.json({ message: "Subscription removed" });
+});
 
 const interval = setInterval(async () => {
-  for(const subscription of subscriptions) {
+  for (const subscription of subscriptions) {
     try {
-      const stock = await yahooFinance.quote(subscription.symbol)
+      const stock = await yahooFinance.quote(subscription.symbol);
 
-      if(!stock) return
+      if (!stock) return;
 
       const data = {
         symbol: stock.symbol,
@@ -89,34 +86,40 @@ const interval = setInterval(async () => {
         high: stock.regularMarketDayHigh,
         low: stock.regularMarketDayLow,
         updatedAt: new Date().toISOString(),
-      }
-      const channelId = 'stock-price'
-      const roomId = subscription.roomId
+      };
+      const channelId = "stock-price";
 
-      const response = await fetch(`https://nodeapi.superviz.com/realtime/${roomId}/${channelId}/publish`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apiKey': process.env.VITE_SUPERVIZ_API_KEY,
-        },
-        body: JSON.stringify({
-          name: 'stock-update',
-          data,
-        })
-      })
+      const response = await fetch(
+        `https://nodeapi.superviz.com/realtime/${channelId}/publish`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            secret: process.env.VITE_SUPERVIZ_SECRET_KEY,
+            client_id: process.env.VITE_SUPERVIZ_CLIENT_ID,
+          },
+          body: JSON.stringify({
+            name: "stock-update",
+            data,
+          }),
+        }
+      );
 
-      console.log(`Sending data to ${channelId}, stock: ${stock.symbol}`, response.status)
+      console.log(
+        `Sending data to ${channelId}, stock: ${stock.symbol}`,
+        response.status
+      );
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   }
-}, 10000)
+}, 10000);
 
-process.on('SIGINT', () => {
-  clearInterval(interval)
-  process.exit()
-})
+process.on("SIGINT", () => {
+  clearInterval(interval);
+  process.exit();
+});
 
 app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000')
-})
+  console.log("Server is running on http://localhost:3000");
+});
