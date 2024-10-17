@@ -28,8 +28,6 @@ export default function App() {
     const channel = await realtime.connect("notification-topic");
 
     channel.subscribe("new-notification", (data) => {
-      console.log("new event:", data);
-
       if (typeof data === "string") return;
 
       toast.info(data.data as string, {

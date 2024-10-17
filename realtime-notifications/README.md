@@ -54,7 +54,6 @@ app.get("/", (req, res) => {
     })
   );
 });
-
 ```
 
 - **Express App:** An Express application is created to handle requests.
@@ -84,12 +83,13 @@ app.post("/notify", (req, res) => {
 
   setTimeout(async () => {
     const response = await fetch(
-      `https://nodeapi.superviz.com/realtime/${roomId}/${channel}/publish`,
+      `https://nodeapi.superviz.com/realtime/${channel}/publish`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apiKey: process.env.VITE_SUPERVIZ_API_KEY,
+          client_id: process.env.VITE_SUPERVIZ_CLIENT_ID,
+          secret: process.env.VITE_SUPERVIZ_SECRET_KEY,
         },
         body: JSON.stringify({
           name: "new-notification",
@@ -109,7 +109,6 @@ app.post("/notify", (req, res) => {
     message: "Notification scheduled",
   });
 });
-
 ```
 
 - **Notify Endpoint:** The `/notify` endpoint accepts POST requests to schedule notifications.
@@ -124,7 +123,6 @@ Launch the server to listen for requests.
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
 });
-
 ```
 
 - **Server Listening:** The server listens on port 3000 and logs a confirmation message when it's running.
@@ -152,7 +150,7 @@ npm install @superviz/sdk react-toastify uuid
 
 ```
 
-- **@superviz/sdk:** SDK for real-time collaboration features.
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time synchronization into your application.
 - **react-toastify:** Library for showing notifications as toast messages.
 - **uuid:** Library for generating unique identifiers.
 
@@ -181,44 +179,34 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-const ROOM_ID = generateId();
+const PARTICIPANT_ID = generateId();
 
 export default function App() {
-  const [initialized, setInitialized] = useState(false);
+  const initialized = useRef(false);
   const [message, setMessage] = useState("");
   const [msToWait, setMsToWait] = useState(1000);
 
   const initialize = useCallback(async () => {
-    if (initialized) return;
+    if (initialized.current) return;
 
-    const superviz = await SuperVizRoom(apiKey, {
-      roomId: ROOM_ID,
+    const realtime = new Realtime(apiKey, {
       participant: {
-        id: generateId(),
+        id: PARTICIPANT_ID,
         name: "participant-name",
       },
-      group: {
-        id: "realtime-notifications",
-        name: "realtime-notifications",
-      },
+      debug: true,
     });
 
-    const realtime = new Realtime();
-    superviz.addComponent(realtime);
-    setInitialized(true);
+    initialized.current = true;
 
-    realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => {
-      const channel = realtime.connect("notification-topic");
+    const channel = await realtime.connect("notification-topic");
 
-      channel.subscribe("new-notification", (data) => {
-        console.log("new event:", data);
+    channel.subscribe("new-notification", (data) => {
+      if (typeof data === "string") return;
 
-        if (typeof data === "string") return;
-
-        toast.info(data.data as string, {
-          position: "top-right",
-          autoClose: 3000,
-        });
+      toast.info(data.data as string, {
+        position: "top-right",
+        autoClose: 3000,
       });
     });
   }, [initialized]);
@@ -226,7 +214,7 @@ export default function App() {
 ```
 
 - **State Management:** The component uses `useState` to manage the state for initialization, message, and delay time.
-- **SuperViz Initialization:** Connects to the SuperViz room using the API key, room ID, and participant details.
+- **SuperViz Initialization:** Instantiates SuperViz Real-Time using the API key and participant details.
 - **Realtime Subscription:** Subscribes to `new-notification` events and displays the notification using `react-toastify`.
 
 **5. Implement the Notification Function**
@@ -263,7 +251,6 @@ const notify = useCallback(async () => {
     });
   }
 }, [message, msToWait]);
-
 ```
 
 - **Notify Function:** Sends a POST request to the server to schedule the notification.
@@ -283,7 +270,9 @@ return (
     <ToastContainer />
     <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
       <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
-        <h1 className="text-white text-2xl font-bold">Realtime Notifications</h1>
+        <h1 className="text-white text-2xl font-bold">
+          Realtime Notifications
+        </h1>
       </header>
       <main className="flex-1 p-20 flex w-full gap-2 items-center justify-center">
         <form>
@@ -333,7 +322,6 @@ return (
     </div>
   </>
 );
-
 ```
 
 - **UI Structure:** The UI contains an input for the message and delay time, and a button to send notifications.
@@ -343,17 +331,16 @@ return (
 
 To start the application, run this command in the terminal:
 
-```bash 
+```bash
 npm run dev
 ```
 
-This command will start both the server and the frontend application. 
+This command will start both the server and the frontend application.
 
 You can access the frontend application at `http://localhost:5173` and the server at `http://localhost:3000`.
 
 ### Summary
 
 In this tutorial, we've built a real-time notification system using SuperViz, Express.js, and React. The server schedules and sends notifications to clients using SuperViz's real-time API. The frontend subscribes to notification events, displaying them as toast messages. By following these steps, you can customize the notification system to handle different types of messages, add more features, and deploy it to a production environment.
-
 
 Feel free to refer to the full code in the [GitHub repository](https://github.com/SuperViz/tutorials/tree/main/realtime-notifications) for more details.

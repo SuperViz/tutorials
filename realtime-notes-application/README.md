@@ -24,10 +24,11 @@ cd realtime-notes-app
 Next, install the SuperViz SDK, which will enable us to add real-time synchronization features to our application.
 
 ```bash
-npm install @superviz/sdk uuid
+npm install @superviz/sdk @superviz/realtime uuid
 ```
 
-- **@superviz/sdk:** SDK for integrating real-time collaboration features, including synchronization.
+- **@superviz/sdk:** SDK for integrating collaboration features into your application.
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time synchronization into your application.
 - **uuid:** A library for generating unique identifiers, useful for creating unique participant IDs.
 
 ### 3. Set Up Environment Variables
@@ -50,8 +51,17 @@ Open `src/App.tsx` and set up the main application component using SuperViz to m
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from "react";
-import SuperVizRoom, { LauncherFacade, MousePointers, Realtime, RealtimeComponentEvent, RealtimeComponentState, RealtimeMessage, WhoIsOnline } from '@superviz/sdk';
-import { v4 as generateId } from 'uuid';
+import SuperVizRoom, {
+  LauncherFacade,
+  MousePointers,
+  WhoIsOnline,
+} from "@superviz/sdk";
+import {
+  Realtime,
+  type RealtimeMessage,
+  type Channel,
+} from "@superviz/realtime/client";
+import { v4 as generateId } from "uuid";
 import { NoteNode } from "./components/note-node";
 import { Note } from "./common/types";
 ```
@@ -66,7 +76,7 @@ Define constants for the API key, room ID, and participant ID.
 
 ```tsx
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-const ROOM_ID = 'video-huddle-application';
+const ROOM_ID = "video-huddle-application";
 const PARTICIPANT_ID = generateId();
 ```
 
@@ -85,7 +95,7 @@ export default function App() {
   const [initialized, setInitialized] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const superviz = useRef<LauncherFacade | null>(null);
-  const channel = useRef<any | null>(null);
+  const channel = useRef<Channel | null>(null);
 ```
 
 **Explanation:**
@@ -128,33 +138,35 @@ const initialize = useCallback(async () => {
 Within the `initialize` function, set up real-time synchronization for notes.
 
 ```tsx
-const realtime = new Realtime();
-  realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, (state) => {
-    if (state !== RealtimeComponentState.STARTED) return;
+const realtime = new Realtime(apiKey, {
+  participant: {
+    id: PARTICIPANT_ID,
+    name,
+  },
+});
 
-    channel.current = realtime.connect('video-huddle-application');
-    channel.current.subscribe('note-change', (event: RealtimeMessage) => {
-      const note = event.data as Note;
+channel.current = await realtime.connect("realtime-sync");
 
-      if (event.participantId === PARTICIPANT_ID || !note) return;
+channel.current.subscribe("note-change", (event: RealtimeMessage) => {
+  const note = event.data as Note;
 
-      setNotes(previous => {
-        return previous.map(n => {
-          if (n.id === note.id) {
-            return note;
-          }
+  if (event.participantId === PARTICIPANT_ID || !note) return;
 
-          return n;
-        });
-      });
+  setNotes((previous) => {
+    return previous.map((n) => {
+      if (n.id === note.id) {
+        return note;
+      }
+
+      return n;
     });
   });
+});
 ```
 
 **Explanation:**
 
 - **Realtime:** Initializes the real-time component for synchronization.
-- **RealtimeComponentEvent.REALTIME_STATE_CHANGED:** Subscribes to changes in the real-time component state.
 - **note-change Subscription:** Listens for note changes and updates the local state accordingly, ignoring changes from the current participant to avoid redundancy.
 
 ### 6. Add Mouse Pointers and Online Status
@@ -162,11 +174,10 @@ const realtime = new Realtime();
 Enhance the application with mouse pointers and online status indicators.
 
 ```tsx
-const mousePointers = new MousePointers('mouse-container');
+const mousePointers = new MousePointers("mouse-container");
 const whoIsOnline = new WhoIsOnline();
 superviz.current.addComponent(mousePointers);
-superviz.current.addComponent(realtime);
-superviz.current.addComponent(whoIsOnline)
+superviz.current.addComponent(whoIsOnline);
 ```
 
 **Explanation:**
@@ -200,7 +211,7 @@ Implement the `handleNoteChange` function to manage updates to notes.
 ```tsx
 const handleNoteChange = useCallback((note: Note) => {
   setNotes((prevNotes) => {
-    return prevNotes.map(n => {
+    return prevNotes.map((n) => {
       if (n.id === note.id) {
         return note;
       }
@@ -210,7 +221,7 @@ const handleNoteChange = useCallback((note: Note) => {
   });
 
   if (channel.current) {
-    channel.current.publish('note-change', note);
+    channel.current.publish("note-change", note);
   }
 }, []);
 ```
@@ -241,20 +252,21 @@ Return the JSX structure for rendering the application, including notes and coll
 ```tsx
 return (
   <>
-    <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-      <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-        <h1 className='text-white text-2xl font-bold'>Real-Time Sync</h1>
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+      <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+        <h1 className="text-white text-2xl font-bold">Real-Time Sync</h1>
       </header>
-      <main id="mouse-container" className='flex-1 p-20 flex w-full gap-2 items-center justify-center overflow-hidden'>
-        {
-          notes.map((note, index) => (
-            <NoteNode key={index} note={note} onChange={handleNoteChange} />
-          ))
-        }
+      <main
+        id="mouse-container"
+        className="flex-1 p-20 flex w-full gap-2 items-center justify-center overflow-hidden"
+      >
+        {notes.map((note, index) => (
+          <NoteNode key={index} note={note} onChange={handleNoteChange} />
+        ))}
       </main>
     </div>
   </>
-)
+);
 ```
 
 **Explanation:**
@@ -292,14 +304,19 @@ export const NoteNode: React.FC<NoteNodeProps> = ({ note, onChange }) => {
     onChange({ ...note, title: newTitle });
   };
 
-  const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleContentChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     const newContent = event.target.value;
     setContent(newContent);
     onChange({ ...note, content: newContent });
   };
 
   return (
-    <div className="note-node p-4 bg-white rounded shadow-lg" style={{ position: "absolute", left: note.x, top: note.y }}>
+    <div
+      className="note-node p-4 bg-white rounded shadow-lg"
+      style={{ position: "absolute", left: note.x, top: note.y }}
+    >
       <input
         type="text"
         value={title}
@@ -314,7 +331,7 @@ export const NoteNode: React.FC<NoteNodeProps> = ({ note, onChange }) => {
       />
     </div>
   );
-}
+};
 ```
 
 **Explanation:**
@@ -347,14 +364,14 @@ export interface Note {
 Here's a quick overview of how the project structure supports real-time synchronization:
 
 1. **`App.tsx`**
-    - Initializes the SuperViz environment.
-    - Sets up participant information and room details.
-    - Handles real-time synchronization and mouse pointers.
+   - Initializes the SuperViz environment.
+   - Sets up participant information and room details.
+   - Handles real-time synchronization and mouse pointers.
 2. **`NoteNode.tsx`**
-    - Displays individual notes with editable fields.
-    - Handles local state updates and propagates changes to the parent component.
+   - Displays individual notes with editable fields.
+   - Handles local state updates and propagates changes to the parent component.
 3. **`types.ts`**
-    - Defines the data structure for notes used throughout the application.
+   - Defines the data structure for notes used throughout the application.
 
 ---
 

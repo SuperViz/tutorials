@@ -14,19 +14,19 @@ To begin, you'll need to set up a new React project where we will integrate the 
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest contextual-comments-canvas -- --template react-ts
 cd contextual-comments-canvas
 ```
 
-### 2. Install SuperViz SDK
+### 2. Install SuperViz React SDK
 
-Next, install the SuperViz SDK, which will enable us to add real-time contextual comments to our application.
+Next, install the SuperViz React SDK, which will enable us to add real-time contextual comments to our application.
 
 ```bash
-npm install @superviz/react-sdk uui
+npm install @superviz/react-sdk uuid
 ```
 
 - **@superviz/react-sdk:** SDK for integrating real-time collaboration features, including contextual comments.
@@ -51,30 +51,30 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using the `SuperVizRoomProvider` to manage the collaborative environment.
 
 ```tsx
-import { SuperVizRoomProvider } from '@superviz/react-sdk'
-import { v4 as generateId } from 'uuid'
-import Room from './Room'
+import { SuperVizRoomProvider } from "@superviz/react-sdk";
+import { v4 as generateId } from "uuid";
+import Room from "./Room";
 
 const developerKey = import.meta.env.VITE_SUPERVIZ_API_KEY;
-const participantId = generateId()
+const participantId = generateId();
 
 export default function App() {
   return (
     <SuperVizRoomProvider
       developerKey={developerKey}
       group={{
-        id: 'contextual-comments',
-        name: 'contextual-comments',
+        id: "contextual-comments",
+        name: "contextual-comments",
       }}
       participant={{
         id: participantId,
-        name: 'Participant',
+        name: "Participant",
       }}
-      roomId='contextual-comments'
+      roomId="contextual-comments"
     >
       <Room />
     </SuperVizRoomProvider>
-  )
+  );
 }
 ```
 
@@ -100,43 +100,45 @@ import { useCanvasPin, useComments, Comments } from "@superviz/react-sdk";
 
 export default function Room() {
   const { openThreads, closeThreads } = useComments();
-  const { pin } = useCanvasPin({ canvasId: 'canvas' });
+  const { pin } = useCanvasPin({ canvasId: "canvas" });
 
   return (
-    <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-      <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-        <h1 className='text-white text-2xl font-bold'>SuperViz Contextual Comments</h1>
-        <div id="comments" className='flex gap-2'></div>
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+      <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+        <h1 className="text-white text-2xl font-bold">
+          SuperViz Contextual Comments
+        </h1>
+        <div id="comments" className="flex gap-2"></div>
       </header>
-      <main className='flex-1 w-full h-full'>
-        <div className='w-full h-full'>
-          <canvas id="canvas" className='w-full h-full'></canvas>
+      <main className="flex-1 w-full h-full">
+        <div className="w-full h-full">
+          <canvas id="canvas" className="w-full h-full"></canvas>
         </div>
 
         {/* SuperViz */}
         <Comments
           pin={pin}
-          position='left'
-          buttonLocation='comments'
+          position="left"
+          buttonLocation="comments"
           onPinActive={openThreads}
           onPinInactive={closeThreads}
         />
       </main>
     </div>
-  )
+  );
 }
 ```
 
 **Explanation:**
 
 - **useCanvasPin Hook:** Sets up pinning functionality on the canvas, allowing users to attach comments to specific areas.
-    - **canvasId:** The ID of the canvas element where pins will be enabled.
+  - **canvasId:** The ID of the canvas element where pins will be enabled.
 - **useComments Hook:** Provides functions to open and close comment threads.
 - **Comments Component:** Displays comments related to the pinned areas on the canvas, enabling real-time feedback and collaboration.
-    - **pin:** Provides the ability to pin comments to specific elements.
-    - **position:** Sets the position of the comment section.
-    - **buttonLocation:** Specifies where the button to access comments will be located.
-    - **onPinActive / onPinInactive:** Callbacks to handle comment thread actions.
+  - **pin:** Provides the ability to pin comments to specific elements.
+  - **position:** Sets the position of the comment section.
+  - **buttonLocation:** Specifies where the button to access comments will be located.
+  - **onPinActive / onPinInactive:** Callbacks to handle comment thread actions.
 
 ---
 
@@ -145,12 +147,12 @@ export default function Room() {
 Here's a quick overview of how the project structure supports contextual comments:
 
 1. **`App.tsx`**
-    - Initializes the SuperViz environment.
-    - Sets up participant information and room details.
-    - Renders the `Room` component within the `SuperVizRoomProvider`.
+   - Initializes the SuperViz environment.
+   - Sets up participant information and room details.
+   - Renders the `Room` component within the `SuperVizRoomProvider`.
 2. **`Room.tsx`**
-    - Contains the main UI elements, including the canvas.
-    - Integrates the `Comments` component to show real-time comments pinned to specific canvas areas.
+   - Contains the main UI elements, including the canvas.
+   - Integrates the `Comments` component to show real-time comments pinned to specific canvas areas.
 
 ---
 
@@ -161,7 +163,7 @@ Here's a quick overview of how the project structure supports contextual comment
 To run your application, use the following command in your project directory:
 
 ```bash
-npm start
+npm run dev
 ```
 
 This command will start the development server and open your application in the default web browser. You can interact with the canvas and add comments in real-time as other participants join the session.
