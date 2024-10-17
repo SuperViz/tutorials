@@ -20,10 +20,11 @@ cd realtime-react-flow
 Next, install the necessary libraries for our project:
 
 ```bash
-npm install @superviz/react-sdk reactflow uuid
+npm install @superviz/react-sdk @superviz/realtime reactflow uuid
 ```
 
 - **@superviz/react-sdk:** SuperViz SDK for integrating real-time collaboration features.
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time synchronization into your application.
 - **reactflow:** A library for building interactive flowcharts and diagrams.
 - **uuid:** A library for generating unique identifiers, useful for creating unique participant IDs.
 
@@ -46,10 +47,10 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using the `SuperVizRoomProvider` to manage the collaborative environment.
 
 ```tsx
-import { SuperVizRoomProvider } from '@superviz/react-sdk';
-import { v4 as generateId } from 'uuid';
-import Room from './Room';
-import { ReactFlowProvider } from 'reactflow';
+import { SuperVizRoomProvider } from "@superviz/react-sdk";
+import { v4 as generateId } from "uuid";
+import Room from "./Room";
+import { ReactFlowProvider } from "reactflow";
 
 const developerKey = import.meta.env.VITE_SUPERVIZ_API_KEY;
 const participantId = generateId();
@@ -59,14 +60,14 @@ export default function App() {
     <SuperVizRoomProvider
       developerKey={developerKey}
       group={{
-        id: 'react-flow-tutorial',
-        name: 'react-flow-tutorial',
+        id: "react-flow-tutorial",
+        name: "react-flow-tutorial",
       }}
       participant={{
         id: participantId,
-        name: 'Participant',
+        name: "Participant",
       }}
-      roomId='react-flow-tutorial'
+      roomId="react-flow-tutorial"
     >
       <ReactFlowProvider>
         <Room participantId={participantId} />
@@ -115,13 +116,12 @@ import "reactflow/dist/style.css";
 import {
   Comments,
   MousePointers,
-  Realtime,
   useComments,
   useHTMLPin,
   useMouse,
-  useRealtime,
   WhoIsOnline,
 } from "@superviz/react-sdk";
+import { Realtime, type Channel } from "@superviz/realtime/client";
 ```
 
 **Explanation:**
@@ -134,6 +134,15 @@ import {
 Define the initial state of nodes and edges for the flowchart.
 
 ```tsx
+type Edge = {
+  type: ConnectionLineType;
+  animated: boolean;
+  source: string | null;
+  target: string | null;
+  sourceHandle: string | null;
+  targetHandle: string | null;
+};
+
 const initialNodes = [
   { id: "1", position: { x: 381, y: 265 }, data: { label: "Start" } },
   { id: "2", position: { x: 556, y: 335 }, data: { label: "Action" } },
@@ -168,6 +177,7 @@ const initialEdges = [
 
 **Explanation:**
 
+- **Edge Type:** Defines the structure of an edge in the flowchart.
 - **initialNodes:** An array of objects defining each node's position and label in the flowchart.
 - **initialEdges:** An array of objects defining connections between nodes, using a smooth step connection line with animation.
 
@@ -181,24 +191,23 @@ type Props = {
 };
 
 export default function Room({ participantId }: Props) {
-  const subscribed = useRef(false);
+  const initialized = useRef(false);
+  const channel = useRef<Channel>();
 ```
 
 **Explanation:**
 
 - **Props Type:** Defines the expected properties for the `Room` component, including the `participantId`.
-- **subscribed Ref:** A ref to track whether the component has subscribed to real-time events, ensuring it only subscribes once.
+- **initialized Ref:** A ref to track whether the component has initialized the Real-Time component and subscribed to real-time events, ensuring it only happens once.
+- **channel Ref:** A ref to store the real-time channel for communication between participants.
 
 ### 4. Set Up Real-Time Hooks and Utilities
 
-Initialize the SuperViz SDK hooks and utilities to manage comments, real-time updates, and mouse transformations.
+Initialize the SuperViz SDK hooks and utilities to manage comments and mouse transformations.
 
 ```tsx
 // Managing comments
 const { openThreads, closeThreads } = useComments();
-
-// Managing real-time updates
-const { isReady, subscribe, unsubscribe, publish } = useRealtime("default");
 
 // Managing mouse pointers
 const { transform } = useMouse();
@@ -214,7 +223,6 @@ const { pin } = useHTMLPin({
 **Explanation:**
 
 - **useComments:** Provides functions to open and close comment threads.
-- **useRealtime:** Offers real-time event handling methods like `subscribe`, `unsubscribe`, and `publish`.
 - **useMouse:** Allows transformations based on mouse movements.
 - **useHTMLPin:** Enables the pinning of comments to specific HTML elements within the application.
 
@@ -241,7 +249,7 @@ Define a callback function for handling new edge connections in the flowchart.
 ```tsx
 const onConnect = useCallback(
   (connection: Connection) => {
-    const edge = {
+    const edge: Edge = {
       ...connection,
       type: ConnectionLineType.SmoothStep,
       animated: true,
@@ -249,11 +257,11 @@ const onConnect = useCallback(
 
     setEdges((eds) => addEdge(edge, eds));
 
-    publish("new-edge", {
+    channel.current!.publish("new-edge", {
       edge,
     });
   },
-  [setEdges, publish]
+  [setEdges]
 );
 ```
 
@@ -335,13 +343,23 @@ useEffect(() => {
 
 - **data-superviz-id:** Allows SuperViz to identify elements that can have pins attached, facilitating comment features.
 
-### 11. Subscribe to Real-Time Events
+### 11. Initialize Real-Time Component
 
-Set up subscriptions to listen for real-time events and synchronize state changes.
+Start Real-Time, connect to a channel and set up subscriptions to listen for real-time events and synchronize state changes.
 
 ```tsx
-useEffect(() => {
-  if (subscribed.current) return;
+const initializeRealtime = useCallback(async () => {
+  if (initialized.current) return;
+  initialized.current = true;
+
+  const realtime = new Realtime(developerKey, {
+    participant: {
+      id: participantId,
+      name: "Participant",
+    },
+  });
+
+  channel.current = await realtime.connect("react-flow-tutorial");
 
   const centerNodes = () => {
     const centerButton = document.querySelector(
@@ -352,23 +370,18 @@ useEffect(() => {
 
   centerNodes();
 
-  // Subscribe to new-edge events
-  subscribe("new-edge", ({ data, participantId: senderId }) => {
-    if (senderId === participantId) return;
+  channel.current!.subscribe<{ edge: Edge }>(
+    "new-edge",
+    ({ data, participantId: senderId }) => {
+      if (senderId === participantId) return;
 
-    setEdges((eds) => addEdge(data.edge, eds));
-  });
+      setEdges((eds) => addEdge(data.edge, eds));
+    }
+  );
 
-  // Subscribe to node-drag events
-  subscribe(
+  channel.current!.subscribe<{ node: Node }>(
     "node-drag",
-    ({
-      data,
-      participantId: senderId,
-    }: {
-      data: { node: Node };
-      participantId: string;
-    }) => {
+    ({ data, participantId: senderId }) => {
       if (senderId === participantId) return;
 
       setNodes((nds) =>
@@ -378,15 +391,21 @@ useEffect(() => {
       );
     }
   );
+}, [participantId, setEdges, setNodes]);
 
-  subscribed.current = true;
-}, [isReady, setEdges, setNodes, unsubscribe, subscribe, participantId]);
+useEffect(() => {
+  initializeRealtime();
+
+  return () => {
+    channel.current?.disconnect();
+  };
+}, [initializeRealtime]);
 ```
 
 **Explanation:**
 
-- **subscribe:** Listens for specific events (`new-edge`, `node-drag`) and updates the local state based on incoming data.
-- **unsubscribe:** Clean up subscriptions when no longer needed.
+- **initializeRealtime:** Use the user API key and participant infos to set up a new Real-Time connection.Listens for specific events (`new-edge`, `node-drag`) and updates the local state based on incoming data.
+- **disconnect:** Clean up subscriptions when no longer needed.
 
 ### 12. Render the Room Component
 
@@ -417,7 +436,6 @@ return (
       </div>
 
       {/* SuperViz Components */}
-      <Realtime />
       <WhoIsOnline position="comments" />
       <Comments
         pin={pin}
@@ -435,7 +453,6 @@ return (
 **Explanation:**
 
 - **ReactFlow:** Displays the flowchart with nodes, edges, and interaction handlers.
-- **Realtime:** Manages real-time synchronization of state across participants.
 - **WhoIsOnline:** Shows a list of online participants in the session.
 - **Comments:** Provides the ability to add and view contextual comments.
 - **MousePointers:** Displays real-time mouse pointers for all participants.
