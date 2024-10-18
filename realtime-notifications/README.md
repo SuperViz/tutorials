@@ -146,7 +146,7 @@ cd realtime-notifications-frontend
 Add the necessary packages to the project.
 
 ```bash
-npm install @superviz/sdk react-toastify uuid
+npm install @superviz/realtime react-toastify uuid
 
 ```
 
@@ -210,7 +210,6 @@ export default function App() {
       });
     });
   }, [initialized]);
-
 ```
 
 - **State Management:** The component uses `useState` to manage the state for initialization, message, and delay time.
