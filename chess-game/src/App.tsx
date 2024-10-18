@@ -1,12 +1,11 @@
 import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useRef, useState } from "react";
-import SuperVizRoom, {
+import SuperVizRoom, { WhoIsOnline } from "@superviz/sdk";
+import {
   Realtime,
-  Channel,
-  RealtimeComponentEvent,
-  RealtimeMessage,
-  WhoIsOnline,
-} from "@superviz/sdk";
+  type Channel,
+  type RealtimeMessage,
+} from "@superviz/realtime/client";
 import { Chessboard } from "react-chessboard";
 import { Chess, Square } from "chess.js";
 
@@ -20,7 +19,7 @@ type ChessMessageUpdate = RealtimeMessage<{
 }>;
 
 export default function App() {
-  const [initialized, setInitialized] = useState(false);
+  const initialized = useRef(false);
   const [gameState, setGameState] = useState<Chess>(new Chess());
   const [gameFen, setGameFen] = useState<string>(gameState.fen());
 
@@ -71,7 +70,8 @@ export default function App() {
   );
 
   const initialize = useCallback(async () => {
-    if (initialized) return;
+    if (initialized.current) return;
+    initialized.current = true;
 
     const superviz = await SuperVizRoom(apiKey, {
       roomId: ROOM_ID,
@@ -85,24 +85,21 @@ export default function App() {
       },
     });
 
-    const realtime = new Realtime();
+    const realtime = new Realtime(apiKey, {
+      participant: {
+        id: PLAYER_ID,
+        name: "player-name",
+      },
+    });
     const whoIsOnline = new WhoIsOnline();
 
-    superviz.addComponent(realtime);
     superviz.addComponent(whoIsOnline);
 
-    setInitialized(true);
+    channel.current = await realtime.connect("move-topic");
 
-    realtime.subscribe(
-      RealtimeComponentEvent.REALTIME_STATE_CHANGED,
-      async () => {
-        channel.current = await realtime.connect("move-topic");
-
-        channel.current.subscribe<ChessMessageUpdate["data"]>(
-          "new-move",
-          handleRealtimeMessage
-        );
-      }
+    channel.current.subscribe<ChessMessageUpdate["data"]>(
+      "new-move",
+      handleRealtimeMessage
     );
   }, [handleRealtimeMessage, initialized]);
 

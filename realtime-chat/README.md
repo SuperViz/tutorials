@@ -14,7 +14,7 @@ To begin, you'll need to set up a new React project where we will integrate Supe
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest realtime-chat -- --template react-ts
@@ -26,10 +26,10 @@ cd realtime-chat
 Next, install the necessary libraries for our project:
 
 ```bash
-npm install @superviz/sdk uuid react-icons
+npm install @superviz/realtime uuid react-icons
 ```
 
-- **@superviz/sdk:** For integrating real-time communication features.
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time synchronization into your application.
 - **uuid:** A library for generating unique identifiers, useful for creating unique participant IDs.
 - **react-icons:** A library for including icons in React applications, used here for the send button icon.
 
@@ -52,9 +52,13 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using SuperViz to manage the chat functionality.
 
 ```tsx
-import { v4 as generateId } from 'uuid';
+import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useState, useRef } from "react";
-import SuperVizRoom, { Realtime, RealtimeComponentEvent, RealtimeMessage } from '@superviz/sdk';
+import {
+  Realtime,
+  type RealtimeMessage,
+  type Channel,
+} from "@superviz/realtime/client";
 import { IoMdSend } from "react-icons/io";
 ```
 
@@ -68,21 +72,17 @@ Define constants for the API key, room ID, and message types.
 
 ```tsx
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-const ROOM_ID = 'realtime-chat';
 
-type Message = RealtimeMessage & {
-  data: {
-    participantName: string;
-    message: string;
-  }
-}
+type Message = {
+  participantName: string;
+  message: string;
+};
 ```
 
 **Explanation:**
 
 - **apiKey:** Retrieves the SuperViz API key from environment variables.
-- **ROOM_ID:** Defines the room ID for the SuperViz session.
-- **Message:** A type that extends RealtimeMessage to include participant name and message content.
+- **Message:** A type that will be used to extend RealtimeMessage to include participant name and message content.
 
 ### 3. Create the App Component
 
@@ -90,12 +90,15 @@ Set up the main `App` component and initialize state variables and references.
 
 ```tsx
 export default function App() {
+  const url = new URL(window.location.href);
+  const name = url.searchParams.get("name") || "Anonymous";
+
   const participant = useRef({
     id: generateId(),
     name: 'participant-name',
   });
-  const channel = useRef<any | null>(null);
-  const [initialized, setInitialized] = useState(false);
+  const channel = useRef<Channel | null>(null);
+  const initialized = useRef(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
 ```
@@ -113,27 +116,19 @@ Create a function to initialize SuperViz and set up real-time message handling.
 
 ```tsx
 const initialize = useCallback(async () => {
-  if (initialized) return;
+  if (initialized.current) return;
+  initialized.current = true;
 
-  const superviz = await SuperVizRoom(apiKey, {
-    roomId: ROOM_ID,
+  const realtime = new Realtime(apiKey, {
     participant: participant.current,
-    group: {
-      id: 'realtime-chat',
-      name: 'realtime-chat',
-    },
   });
 
-  const realtime = new Realtime();
-  superviz.addComponent(realtime);
-  setInitialized(true);
+  channel.current = await realtime.connect("message-topic");
 
-  realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => {
-    channel.current = realtime.connect('message-topic');
-
-    channel.current.subscribe('message', (data: Message) => {
-      setMessages((prev) => [...prev, data].sort((a, b) => a.timestamp - b.timestamp));
-    });
+  channel.current.subscribe<Message>("message", (data) => {
+    setMessages((prev) =>
+      [...prev, data].sort((a, b) => a.timestamp - b.timestamp)
+    );
   });
 }, [initialized]);
 ```
@@ -152,12 +147,12 @@ Create a function to send messages to the chat.
 const sendMessage = useCallback(() => {
   if (!channel.current) return;
 
-  channel.current.publish('message', {
+  channel.current.publish("message", {
     message,
     participantName: participant.current!.name,
   });
 
-  setMessage('');
+  setMessage("");
 }, [message]);
 ```
 
@@ -187,26 +182,45 @@ Finally, return the JSX structure for rendering the chat interface.
 
 ```tsx
 return (
-  <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-    <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-      <h1 className='text-white text-2xl font-bold'>Realtime Chat</h1>
+  <div className="w-full h-full bg-[#e9e5ef] flex items-center justify-center flex-col">
+    <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+      <h1 className="text-white text-2xl font-bold">Realtime Chat</h1>
     </header>
-    <main className='flex-1 flex w-full flex-col overflow-hidden'>
-      <div className='flex-1 bg-gray-300 w-full p-2'>
-        {
-          messages.map((message) => (
-            <div className={`${message.participantId === participant.current!.id ? 'justify-end' : 'justify-start'} w-full flex mb-2`}>
-              <div className={`${message.participantId === participant.current!.id ? 'bg-purple-200' : 'bg-blue-300'} text-black p-2 rounded-lg max-w-xs`}>
-                <div className={`${message.participantId === participant.current!.id ? 'text-right' : 'text-left'} text-xs text-gray-500`}>
-                  {message.participantId === participant.current!.id ? 'You' : message.data.participantName}
-                </div>
-                {message.data.message}
+    <main className="flex-1 flex w-full flex-col justify-between overflow-hidden">
+      <div className="bg-[#e9e5ef] w-full p-2 overflow-auto">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`${
+              message.participantId === participant.current!.id
+                ? "justify-end"
+                : "justify-start"
+            } w-full flex mb-2`}
+          >
+            <div
+              className={`${
+                message.participantId === participant.current!.id
+                  ? "bg-[#f29ee8]"
+                  : "bg-[#baa9ff]"
+              } text-black p-2 rounded-lg max-w-xs`}
+            >
+              <div
+                className={`${
+                  message.participantId === participant.current!.id
+                    ? "text-right"
+                    : "text-left"
+                } text-xs text-[#57535f]`}
+              >
+                {message.participantId === participant.current!.id
+                  ? "You"
+                  : message.data.participantName}
               </div>
+              {message.data.message}
             </div>
-          ))
-        }
+          </div>
+        ))}
       </div>
-      <div className='p-2 flex items-center justify-between gap-2 w-full'>
+      <div className="p-2 flex items-center justify-between gap-2 w-full h-[58px]">
         <input
           type="text"
           placeholder="Type your message..."
@@ -215,7 +229,7 @@ return (
           onChange={(e) => setMessage(e.target.value)}
         />
         <button
-          className='bg-purple-400 text-white px-4 py-2 rounded-full disabled:opacity-50'
+          className="bg-purple-400 text-white px-4 py-2 rounded-full disabled:opacity-50"
           onClick={sendMessage}
           disabled={!message || !channel.current}
         >
@@ -224,7 +238,7 @@ return (
       </div>
     </main>
   </div>
-)
+);
 ```
 
 **Explanation:**
@@ -238,13 +252,13 @@ return (
 Here's a quick overview of how the project structure supports a real-time chat application:
 
 1. **`App.tsx`**
-    - Initializes SuperViz and sets up real-time chat functionality.
-    - Handles sending and receiving chat messages in real-time.
+   - Initializes SuperViz and sets up real-time chat functionality.
+   - Handles sending and receiving chat messages in real-time.
 2. **Chat Interface**
-    - Displays messages in a chat bubble format.
-    - Provides an input field and send button for users to send messages.
+   - Displays messages in a chat bubble format.
+   - Provides an input field and send button for users to send messages.
 3. **Real-Time Communication**
-    - Manages real-time communication between participants using SuperViz.
+   - Manages real-time communication between participants using SuperViz.
 
 ---
 

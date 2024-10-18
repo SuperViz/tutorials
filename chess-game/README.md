@@ -24,10 +24,11 @@ cd chess-game
 Next, install the necessary libraries for our project:
 
 ```bash
-npm install @superviz/sdk react-chessboard chess.js uuid
+npm install @superviz/sdk @superviz/realtime react-chessboard chess.js uuid
 ```
 
-- **@superviz/sdk:** SDK for integrating real-time collaboration features, including synchronization.
+- **@superviz/sdk:** SuperViz SDK for integrating collaborative features into your application.
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time synchronization into your application.
 - **react-chessboard:** A library for rendering a chessboard in React applications.
 - **chess.js:** A library for managing chess game logic and rules.
 - **uuid:** A library for generating unique identifiers, useful for creating unique participant IDs.
@@ -53,19 +54,19 @@ Open `src/App.tsx` and set up the main application component using SuperViz to m
 ```tsx
 import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useRef, useState } from "react";
-import SuperVizRoom, {
+import SuperVizRoom, { WhoIsOnline } from "@superviz/sdk";
+import {
   Realtime,
-  RealtimeComponentEvent,
-  RealtimeMessage,
-  WhoIsOnline,
-} from "@superviz/sdk";
+  type Channel,
+  type RealtimeMessage,
+} from "@superviz/realtime/client";
 import { Chessboard } from "react-chessboard";
 import { Chess, Square } from "chess.js";
 ```
 
 **Explanation:**
 
-- **Imports:** Import necessary components from React, SuperViz SDK, `react-chessboard`, `chess.js`, and UUID for managing state, initializing SuperViz, rendering the chessboard, and generating unique identifiers.
+- **Imports:** Import necessary components from React, SuperViz SDK, SuperViz Real-Time, `react-chessboard`, `chess.js`, and UUID for managing state, initializing SuperViz, rendering the chessboard, and generating unique identifiers.
 
 ### 2. Define Constants
 
@@ -106,16 +107,16 @@ Set up the main `App` component and initialize state variables.
 
 ```tsx
 export default function App() {
-  const [initialized, setInitialized] = useState(false);
+  const initialized = useRef(false);
   const [gameState, setGameState] = useState<Chess>(new Chess());
   const [gameFen, setGameFen] = useState<string>(gameState.fen());
 
-  const channel = useRef<any | null>(null);
+  const channel = useRef<Channel | null>(null);
 ```
 
 **Explanation:**
 
-- **initialized:** A state variable to track whether the SuperViz environment has been set up.
+- **initialized:** A ref to track whether the SuperViz environment has been set up.
 - **gameState:** A state variable to manage the chess game state using the `chess.js` library.
 - **gameFen:** A state variable to store the FEN (Forsyth-Edwards Notation) string representing the current game position.
 - **channel:** A ref to store the real-time communication channel.
@@ -126,7 +127,8 @@ Create an `initialize` function to set up the SuperViz environment and configure
 
 ```tsx
 const initialize = useCallback(async () => {
-  if (initialized) return;
+  if (initialized.current) return;
+  initialized.current = true;
 
   const superviz = await SuperVizRoom(apiKey, {
     roomId: ROOM_ID,
@@ -140,19 +142,22 @@ const initialize = useCallback(async () => {
     },
   });
 
-  const realtime = new Realtime();
+  const realtime = new Realtime(apiKey, {
+    participant: {
+      id: PLAYER_ID,
+      name: "player-name",
+    },
+  });
   const whoIsOnline = new WhoIsOnline();
 
-  superviz.addComponent(realtime);
   superviz.addComponent(whoIsOnline);
 
-  setInitialized(true);
+  channel.current = await realtime.connect("move-topic");
 
-  realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => {
-    channel.current = realtime.connect("move-topic");
-
-    channel.current.subscribe("new-move", handleRealtimeMessage);
-  });
+  channel.current.subscribe<ChessMessageUpdate["data"]>(
+    "new-move",
+    handleRealtimeMessage
+  );
 }, [handleRealtimeMessage, initialized]);
 ```
 
@@ -160,7 +165,7 @@ const initialize = useCallback(async () => {
 
 - **initialize:** An asynchronous function that initializes the SuperViz room and checks if it's already initialized to prevent duplicate setups.
 - **SuperVizRoom:** Configures the room, participant, and group details for the session.
-- **Realtime Subscription:** Connects to the `move-topic` channel and listens for new moves, updating the local state accordingly.
+- **Realtime component:** Connects to the `move-topic` channel and listens for new moves, updating the local state accordingly.
 
 ### 6. Handle Chess Moves
 

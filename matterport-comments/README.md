@@ -14,7 +14,7 @@ To begin, you'll need to set up a new React project where we will integrate Supe
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest matterport-comments -- --template react-ts
@@ -53,11 +53,11 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using SuperViz to manage the collaborative environment.
 
 ```tsx
-import { v4 as generateId } from 'uuid';
+import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useRef } from "react";
-import SuperVizRoom, { Comments } from '@superviz/sdk';
-import { MatterportPin } from '@superviz/matterport-plugin';
-import type { MpSdk } from '@superviz/matterport-plugin/dist/common/types/matterport.types.d.ts';
+import SuperVizRoom, { Comments } from "@superviz/sdk";
+import { MatterportPin } from "@superviz/matterport-plugin";
+import type { MpSdk } from "@superviz/matterport-plugin/dist/common/types/matterport.types.d.ts";
 ```
 
 **Explanation:**
@@ -72,7 +72,7 @@ Define constants for the API key, Matterport key, and room ID.
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
 const matterportKey = import.meta.env.VITE_MATTERPORT_KEY as string;
 
-const ROOM_ID = 'matterport-comments';
+const ROOM_ID = "matterport-comments";
 const PLAYER_ID = generateId();
 ```
 
@@ -109,17 +109,20 @@ const initializeSuperViz = useCallback(async () => {
     roomId: ROOM_ID,
     participant: {
       id: PLAYER_ID,
-      name: 'player-name',
+      name: "player-name",
     },
     group: {
-      id: 'matterport-comments',
-      name: 'matterport-comments',
-    }
+      id: "matterport-comments",
+      name: "matterport-comments",
+    },
   });
 
-  const pinAdapter = new MatterportPin(matterportSDK.current!, document.getElementById('showcase')!);
+  const pinAdapter = new MatterportPin(
+    matterportSDK.current!,
+    document.getElementById("showcase")!
+  );
   const comments = new Comments(pinAdapter, {
-    buttonLocation: 'top-right',
+    buttonLocation: "top-right",
   });
   superviz.addComponent(comments);
 }, []);
@@ -136,14 +139,17 @@ Create a function to initialize the Matterport Viewer with the necessary credent
 
 ```tsx
 const initializeMatterport = useCallback(async () => {
-  const showcase = document.getElementById('showcase') as MatterportIframe;
-  const showcaseWindow = showcase.contentWindow as MatterportIframe['window'];
+  const showcase = document.getElementById("showcase") as MatterportIframe;
+  const showcaseWindow = showcase.contentWindow as MatterportIframe["window"];
   const source = `/vendor/matterport/showcase.html?&play=1&qs=1&applicationKey=${matterportKey}&m=Zh14WDtkjdC`;
-  showcase.setAttribute('src', source);
+  showcase.setAttribute("src", source);
 
   await new Promise((resolve) => {
-    showcase.addEventListener('load', async () => {
-      matterportSDK.current = await showcaseWindow?.MP_SDK.connect(showcaseWindow, matterportKey);
+    showcase.addEventListener("load", async () => {
+      matterportSDK.current = await showcaseWindow?.MP_SDK.connect(
+        showcaseWindow,
+        matterportKey
+      );
       resolve(matterportSDK.current);
     });
   });
@@ -164,12 +170,14 @@ Finally, return the JSX structure for rendering the Matterport Viewer and the Su
 
 ```tsx
 return (
-  <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-    <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-      <h1 className='text-white text-2xl font-bold'>SuperViz Matterport Comments</h1>
+  <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+    <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+      <h1 className="text-white text-2xl font-bold">
+        SuperViz Matterport Comments
+      </h1>
     </header>
-    <main className='w-full h-full flex items-center justify-center relative'>
-      <iframe id='showcase' className='w-full h-full' />
+    <main className="w-full h-full flex items-center justify-center relative">
+      <iframe id="showcase" className="w-full h-full" />
     </main>
   </div>
 );
@@ -186,13 +194,13 @@ return (
 Here's a quick overview of how the project structure supports adding contextual comments to a Matterport SDK application:
 
 1. **`App.tsx`**
-    - Initializes SuperViz.
-    - Sets up the Matterport Viewer with real-time commenting features.
-    - Handles the loading of 3D spaces and integration of collaborative tools.
+   - Initializes SuperViz.
+   - Sets up the Matterport Viewer with real-time commenting features.
+   - Handles the loading of 3D spaces and integration of collaborative tools.
 2. **Matterport Viewer**
-    - Renders the 3D space, allowing users to navigate, inspect, and leave comments in a shared virtual environment.
+   - Renders the 3D space, allowing users to navigate, inspect, and leave comments in a shared virtual environment.
 3. **SuperViz Components**
-    - **MatterportPin & Comments:** Enables users to pin comments to specific locations in the 3D model, enhancing collaborative review sessions.
+   - **MatterportPin & Comments:** Enables users to pin comments to specific locations in the 3D model, enhancing collaborative review sessions.
 
 ---
 

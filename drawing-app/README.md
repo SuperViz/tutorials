@@ -28,10 +28,11 @@ Vite is a modern build tool that provides a faster and more efficient developmen
 Next, install the necessary libraries for our project:
 
 ```bash
-npm install @superviz/sdk konva react-konva uuid
+npm install @superviz/sdk @superviz/realtime konva react-konva uuid
 ```
 
 - **@superviz/sdk:** For integrating real-time collaboration features.
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time.
 - **konva & react-konva:** Libraries for creating and managing a canvas-based drawing interface in React.
 - **uuid:** A library for generating unique identifiers, useful for creating unique participant IDs.
 
@@ -54,11 +55,22 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using SuperViz to manage the collaborative drawing experience.
 
 ```tsx
-import { v4 as generateId } from 'uuid';
+import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useRef, useState } from "react";
-import SuperVizRoom, { LauncherFacade, MousePointers, Participant, ParticipantEvent, Realtime, RealtimeComponentEvent, RealtimeMessage, WhoIsOnline } from '@superviz/sdk';
-import { Board } from './components/board';
-import { BoardState } from './types/global.types';
+import SuperVizRoom, {
+  LauncherFacade,
+  MousePointers,
+  Participant,
+  ParticipantEvent,
+  WhoIsOnline,
+} from "@superviz/sdk";
+import {
+  Realtime,
+  type Channel,
+  type RealtimeMessage,
+} from "@superviz/realtime";
+import { Board } from "./components/board";
+import { BoardState } from "./types/global.types";
 ```
 
 **Explanation:**
@@ -71,7 +83,7 @@ Define constants for the API key, room ID, and participant ID.
 
 ```tsx
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-const ROOM_ID = 'drawing-app';
+const ROOM_ID = "drawing-app";
 const PLAYER_ID = generateId();
 ```
 
@@ -86,9 +98,9 @@ Set up the main `App` component and initialize the drawing board and SuperViz.
 
 ```tsx
 export default function App() {
-  const [initialized, setInitialized] = useState(false);
-  const [fillColor, setFillColor] = useState('#000');
-  const [ready, setReady] = useState(false);
+  const initialized = useRef(false);
+  const ready = useRef(false);
+  const [fillColor, setFillColor] = useState("#000");
   const [state, setState] = useState<BoardState>({
     rectangles: [],
     circles: [],
@@ -97,7 +109,7 @@ export default function App() {
   });
 
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const channel = useRef<any | null>(null);
+  const channel = useRef<Channel | null>(null);
   const superviz = useRef<LauncherFacade | null>(null);
 ```
 
@@ -112,43 +124,47 @@ Create a function to initialize SuperViz and set up real-time collaboration for 
 
 ```tsx
 const initialize = useCallback(async () => {
-  if (initialized) return;
+  if (initialized.current) return;
+  initialized.current = true;
 
   superviz.current = await SuperVizRoom(apiKey, {
     roomId: ROOM_ID,
     participant: {
       id: PLAYER_ID,
-      name: 'player-name',
+      name: "player-name",
     },
     group: {
-      id: 'drawing-app',
-      name: 'drawing-app',
-    }
+      id: "drawing-app",
+      name: "drawing-app",
+    },
   });
 
-  const realtime = new Realtime();
+  const realtime = new Realtime(apiKey, {
+    participant: {
+      id: PLAYER_ID,
+      name,
+    },
+  });
   const whoIsOnline = new WhoIsOnline();
 
-  superviz.current?.addComponent(realtime);
   superviz.current?.addComponent(whoIsOnline);
 
-  setInitialized(true);
+  channel.current = await realtime.connect("board-topic");
+  channel.current.subscribe<BoardState>("update-state", handleRealtimeMessage);
 
-  realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => {
-    channel.current = realtime.connect('board-topic');
-    channel.current.subscribe('update-state', handleRealtimeMessage);
-  });
+  superviz.current?.subscribe(
+    ParticipantEvent.LOCAL_UPDATED,
+    (participant: Participant) => {
+      setFillColor(participant.slot?.color || "#000");
 
-  superviz.current?.subscribe(ParticipantEvent.LOCAL_UPDATED, (participant: Participant) => {
-    setFillColor(participant.slot?.color || '#000');
+      if (!ready.current && participant.slot?.index !== 0) {
+        ready.current = true;
 
-    if (!ready && participant.slot?.index !== 0) {
-      setReady(true);
-
-      const mousePointers = new MousePointers('board-container');
-      superviz.current?.addComponent(mousePointers);
+        const mousePointers = new MousePointers("board-container");
+        superviz.current?.addComponent(mousePointers);
+      }
     }
-  });
+  );
 }, [handleRealtimeMessage, initialized, ready]);
 ```
 
@@ -170,7 +186,7 @@ const handleRealtimeMessage = useCallback((message: BoardStateMessage) => {
 const updateState = useCallback((state: BoardState) => {
   setState(state);
   if (channel.current) {
-    channel.current.publish('update-state', state);
+    channel.current.publish("update-state", state);
   }
 }, []);
 ```
@@ -188,29 +204,29 @@ Finally, return the JSX structure for rendering the collaborative drawing board.
 
 ```tsx
 return (
-  <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-    <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-      <h1 className='text-white text-2xl font-bold'>SuperViz Drawing App</h1>
+  <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+    <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+      <h1 className="text-white text-2xl font-bold">SuperViz Drawing App</h1>
     </header>
-    <main ref={contentRef} className='w-full h-full flex items-center justify-center' id='board-container'>
-      {
-        ready && (
-          <Board
-            state={state}
-            setState={updateState}
-            width={contentRef.current?.clientWidth || 0}
-            height={contentRef.current?.clientHeight || 0}
-            fillColor={fillColor}
-          />
-        )
-      }
-      {
-        !ready && (
-          <div className='w-full h-full flex items-center justify-center'>
-            Loading...
-          </div>
-        )
-      }
+    <main
+      ref={contentRef}
+      className="w-full h-full flex items-center justify-center"
+      id="board-container"
+    >
+      {ready && (
+        <Board
+          state={state}
+          setState={updateState}
+          width={contentRef.current?.clientWidth || 0}
+          height={contentRef.current?.clientHeight || 0}
+          fillColor={fillColor}
+        />
+      )}
+      {!ready && (
+        <div className="w-full h-full flex items-center justify-center">
+          Loading...
+        </div>
+      )}
     </main>
   </div>
 );
@@ -227,13 +243,13 @@ return (
 Here's a quick overview of how the project structure supports a collaborative drawing application:
 
 1. **`App.tsx`**
-    - Initializes SuperViz and sets up real-time collaboration for the drawing board.
-    - Manages the state and updates of the drawing board.
+   - Initializes SuperViz and sets up real-time collaboration for the drawing board.
+   - Manages the state and updates of the drawing board.
 2. **`Board` Component**
-    - Handles the rendering and interaction logic for the drawing board, including creating shapes, scribbles, and allowing users to manipulate them.
-    - Updates the drawing state in real-time as participants interact with the board.
+   - Handles the rendering and interaction logic for the drawing board, including creating shapes, scribbles, and allowing users to manipulate them.
+   - Updates the drawing state in real-time as participants interact with the board.
 3. **Real-Time Communication**
-    - Manages real-time communication between participants using SuperViz, ensuring that the drawing board is synchronized across all users.
+   - Manages real-time communication between participants using SuperViz, ensuring that the drawing board is synchronized across all users.
 
 ---
 

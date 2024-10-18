@@ -45,7 +45,6 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const subscriptions = [];
-
 ```
 
 **Explanation:**
@@ -59,25 +58,25 @@ const subscriptions = [];
 Define an endpoint to subscribe to stock updates.
 
 ```js
-app.get('/subscribe', async (req, res) => {
-  console.log(req.query)
+app.get("/subscribe", async (req, res) => {
+  console.log(req.query);
 
-  if(!req.query.symbol) {
-    return res.status(400).json({ error: 'Missing symbol' })
+  if (!req.query.symbol) {
+    return res.status(400).json({ error: "Missing symbol" });
   }
 
   try {
-    const response = await yahooFinance.quote(req.query.symbol)
+    const response = await yahooFinance.quote(req.query.symbol);
 
-    if(!response) {
-      return res.status(404).json({ error: 'Symbol not found' })
+    if (!response) {
+      return res.status(404).json({ error: "Symbol not found" });
     }
 
-    subscriptions.push({ 
-      roomId: req.query.roomId, 
-      symbol: req.query.symbol 
-    })
-  
+    subscriptions.push({
+      roomId: req.query.roomId,
+      symbol: req.query.symbol,
+    });
+
     return res.json({
       symbol: response.symbol,
       name: response.shortName,
@@ -87,11 +86,11 @@ app.get('/subscribe', async (req, res) => {
       high: response.regularMarketDayHigh,
       low: response.regularMarketDayLow,
       updatedAt: new Date().toISOString(),
-    })
+    });
   } catch (error) {
-    return res.status(500).json({ error: error.toString() })    
+    return res.status(500).json({ error: error.toString() });
   }
-})
+});
 ```
 
 **Explanation:**
@@ -105,23 +104,27 @@ app.get('/subscribe', async (req, res) => {
 Provide a way to unsubscribe from stock updates.
 
 ```js
-app.get('/unsubscribe', (req, res) => {
-  if(!req.query.roomId) {
-    return res.status(400).json({ error: 'Missing roomId' })
+app.get("/unsubscribe", (req, res) => {
+  if (!req.query.roomId) {
+    return res.status(400).json({ error: "Missing roomId" });
   }
 
-  if(!req.query.symbol) {
-    return res.status(400).json({ error: 'Missing symbol' })
+  if (!req.query.symbol) {
+    return res.status(400).json({ error: "Missing symbol" });
   }
 
-  const index = subscriptions.findIndex(subscription => subscription.roomId === req.query.roomId && subscription.symbol === req.query.symbol)
-  if(index === -1) {
-    return res.status(404).json({ error: 'Subscription not found' })
+  const index = subscriptions.findIndex(
+    (subscription) =>
+      subscription.roomId === req.query.roomId &&
+      subscription.symbol === req.query.symbol
+  );
+  if (index === -1) {
+    return res.status(404).json({ error: "Subscription not found" });
   }
 
-  subscriptions.splice(index, 1)
-  return res.json({ message: 'Subscription removed' })
-})
+  subscriptions.splice(index, 1);
+  return res.json({ message: "Subscription removed" });
+});
 ```
 
 **Explanation:**
@@ -135,11 +138,11 @@ Use a timed interval to fetch stock updates and broadcast them using the SuperVi
 
 ```jsx
 const interval = setInterval(async () => {
-  for(const subscription of subscriptions) {
+  for (const subscription of subscriptions) {
     try {
-      const stock = await yahooFinance.quote(subscription.symbol)
+      const stock = await yahooFinance.quote(subscription.symbol);
 
-      if(!stock) return
+      if (!stock) return;
 
       const data = {
         symbol: stock.symbol,
@@ -150,34 +153,40 @@ const interval = setInterval(async () => {
         high: stock.regularMarketDayHigh,
         low: stock.regularMarketDayLow,
         updatedAt: new Date().toISOString(),
-      }
-      const channelId = 'stock-price'
-      const roomId = subscription.roomId
+      };
+      const channelId = "stock-price";
 
-      const response = await fetch(`https://nodeapi.superviz.com/realtime/${roomId}/${channelId}/publish`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apiKey': process.env.VITE_SUPERVIZ_API_KEY,
-        },
-        body: JSON.stringify({
-          name: 'stock-update',
-          data,
-        })
-      })
+      const response = await fetch(
+        `https://nodeapi.superviz.com/realtime/${channelId}/publish`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            secret: process.env.VITE_SUPERVIZ_SECRET_KEY,
+            client_id: process.env.VITE_SUPERVIZ_CLIENT_ID,
+          },
+          body: JSON.stringify({
+            name: "stock-update",
+            data,
+          }),
+        }
+      );
 
-      console.log(`Sending data to ${channelId}, stock: ${stock.symbol}`, response.status)
+      console.log(
+        `Sending data to ${channelId}, stock: ${stock.symbol}`,
+        response.status
+      );
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   }
-}, 2000)
+}, 2000);
 ```
 
 **Explanation:**
 
 - **Interval:** Every 2 seconds, fetch stock updates for all subscriptions.
-- **SuperViz API:** Send stock data to SuperViz's real-time API, using the `roomId` and `channelId` to target specific clients.
+- **SuperViz API:** Send stock data to SuperViz's real-time API, using the `channelId` to target specific clients.
 
 ### 6. Start the Server
 
@@ -187,7 +196,6 @@ Launch the server to listen for requests.
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
 });
-
 ```
 
 **Explanation:**
@@ -200,45 +208,46 @@ The frontend uses React to display real-time stock updates, connecting to the Su
 
 ### 1. Create a New React Project
 
-Initialize a new React application using Create React App with TypeScript.
+Initialize a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest
 cd realtime-dashboard-frontend
 ```
 
-### 2. Install SuperViz SDK
+### 2. Install SuperViz Real-Time
 
-Add the SuperViz SDK and other necessary packages.
+Add the SuperViz Real-Time component and other necessary packages.
 
 ```bash
-npm install @superviz/sdk luxon uuid
+npm install @superviz/realtime luxon uuid
 ```
 
 **Explanation:**
 
-- **@superviz/sdk:** SDK for real-time collaboration features.
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time synchronization into your application.
 - **luxon:** DateTime library for formatting dates.
 - **uuid:** Library for generating unique identifiers.
 
 ### 3. Set Up Environment Variables
 
-Create a `.env` file in the frontend directory and add the SuperViz API key.
+Create a `.env` file in the frontend directory and add the SuperViz API key, and the secret key and client id you've created in our dashboard.
 
 ```
 VITE_SUPERVIZ_API_KEY=YOUR_SUPERVIZ_API_KEY
+VITE_SUPERVIZ_CLIENT_ID=YOUR_SUPERVIZ_CLIENT_ID
+VITE_SUPERVIZ_SECRET_KEY=YOUR_SUPERVIZ_SECRET_KEY
 ```
 
 **Explanation:**
 
-- **Environment Variables:** Store the API key securely using `.env` and access it through `import.meta.env`.
+- **Environment Variables:** Store your keys securely using `.env` and access it through `import.meta.env`.
 
 ### 4. Define Common Types
 
 Create a directory `src/common` and add a `types.ts` file to define types used across the application.
 
 ```tsx
-typescriptCopy code
 // src/common/types.ts
 export type Stock = {
   symbol: string;
@@ -250,7 +259,6 @@ export type Stock = {
   low: number;
   updatedAt: string;
 };
-
 ```
 
 **Explanation:**
@@ -264,45 +272,39 @@ Open `src/App.tsx` and set up the main component to handle user interactions and
 ```tsx
 import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useState } from "react";
-import SuperVizRoom, {
-  Realtime,
-  RealtimeComponentEvent,
-  RealtimeMessage,
-} from "@superviz/sdk";
+import { Realtime } from "@superviz/realtime/client";
 import { Stock } from "./common/types";
 import { StockPrice } from "./components/stock-price";
 
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-const ROOM_ID = generateId();
 
 export default function App() {
-  const [stock, setStock] = useState('AAPL')
-  const [stockList, setStockList] = useState<Stock[]>([])
+  const [stock, setStock] = useState("AAPL");
+  const [stockList, setStockList] = useState<Stock[]>([]);
 
   const subscribeToStock = useCallback(async () => {
     const params = {
       roomId: ROOM_ID,
       symbol: stock,
-    }
+    };
 
-    const url = new URL('http://localhost:3000/subscribe')
-    url.search = new URLSearchParams(params).toString()
+    const url = new URL("http://localhost:3000/subscribe");
+    url.search = new URLSearchParams(params).toString();
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-      }
-    })
+        "Content-Type": "application/json",
+      },
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
-    if(!data || stockList.includes(data.symbol)) return
+    if (!data || stockList.includes(data.symbol)) return;
 
-    setStockList((prev) => [...prev, data])
-  }, [stock, stockList])
+    setStockList((prev) => [...prev, data]);
+  }, [stock, stockList]);
 }
-
 ```
 
 **Explanation:**
@@ -316,43 +318,32 @@ Add the initialization logic to connect to the SuperViz SDK.
 
 ```tsx
 const initialize = useCallback(async () => {
-  const superviz = await SuperVizRoom(apiKey, {
-    roomId: ROOM_ID,
+  const realtime = new Realtime(apiKey, {
     participant: {
       id: generateId(),
       name: "participant-name",
     },
-    group: {
-      id: "realtime-data-dashboard",
-      name: "realtime-data-dashboard",
-    },
   });
 
-  const realtime = new Realtime();
-  superviz.addComponent(realtime);
+  const channel = await realtime.connect("stock-price");
+  channel.subscribe("stock-update", (data) => {
+    console.log("New channel event", data);
 
-  realtime.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, () => {
-    const channel = realtime.connect("stock-price");
-    channel.subscribe("stock-update", (message: RealtimeMessage) => {
-      console.log("New channel event", message);
+    if (typeof data === "string") return;
 
-      if (typeof message.data !== "object") return;
+    setStockList((prev) => {
+      return prev.map((stock) => {
+        const newStock = data.data as Stock;
 
-      setStockList((prev) => {
-        return prev.map((stock) => {
-          const newStock = message.data as Stock;
+        if (stock.symbol === newStock?.symbol) {
+          return newStock;
+        }
 
-          if (stock.symbol === newStock?.symbol) {
-            return newStock;
-          }
-
-          return stock;
-        });
+        return stock;
       });
     });
   });
 }, []);
-
 ```
 
 **Explanation:**
@@ -366,7 +357,7 @@ Finish the `App` component by rendering the user interface.
 
 ```tsx
 return (
-  <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+  <div className="w-full h-full bg-gray-200 flex flex-col">
     <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
       <div>
         <h1 className="text-white text-2xl font-bold">
@@ -388,14 +379,13 @@ return (
         </button>
       </div>
     </header>
-    <main className="flex-1 p-20 flex w-full gap-2">
+    <main className="p-20 px-40 flex gap-2 flex-wrap">
       {stockList.map((stock) => (
         <StockPrice key={stock.symbol} stock={stock} />
       ))}
     </main>
   </div>
 );
-
 ```
 
 **Explanation:**
@@ -439,7 +429,6 @@ export function StockPrice({ stock }: Props) {
     </div>
   );
 }
-
 ```
 
 **Explanation:**
@@ -451,17 +440,16 @@ export function StockPrice({ stock }: Props) {
 
 To start the application, run this command in the terminal:
 
-```bash 
+```bash
 npm run dev
 ```
 
-This command will start both the server and the frontend application. 
+This command will start both the server and the frontend application.
 
 You can access the frontend application at `http://localhost:5173` and the server at `http://localhost:3000`.
 
 ### Summary
 
 In this tutorial, we've built a real-time stock dashboard using SuperViz, Express.js, and React. The server fetches stock data from Yahoo Finance and sends updates to subscribed clients using SuperViz's real-time API. The frontend subscribes to stock updates, displaying them in a responsive UI. By following these steps, you can customize the dashboard to track different stocks, add more features, and deploy it to a production environment.
-
 
 Feel free to refer to the full code in the [GitHub repository](https://github.com/SuperViz/tutorials/tree/main/realtime-data-dashboard) for more details.

@@ -12,7 +12,7 @@ To begin, you'll need to set up a new React project where we will integrate Supe
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest presence-autodesk-app -- --template react-ts
@@ -52,10 +52,10 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using SuperViz to manage the collaborative environment.
 
 ```tsx
-import { v4 as generateId } from 'uuid';
+import { v4 as generateId } from "uuid";
 import { useCallback, useEffect, useRef } from "react";
-import SuperVizRoom, { Comments } from '@superviz/sdk';
-import { Presence3D, AutodeskPin } from '@superviz/autodesk-viewer-plugin';
+import SuperVizRoom, { Comments } from "@superviz/sdk";
+import { Presence3D, AutodeskPin } from "@superviz/autodesk-viewer-plugin";
 ```
 
 **Explanation:**
@@ -70,9 +70,11 @@ Define constants for the API key, Autodesk credentials, and room ID.
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
 const clientId = import.meta.env.VITE_AUTODESK_CLIENT_ID as string;
 const clientSecret = import.meta.env.VITE_AUTODESK_CLIENT_SECRET as string;
-const documentId = `urn:${btoa("urn:adsk.objects:os.object:e8d17563-1a4e-4471-bd72-a0a7e8d719bc/fileifc.ifc")}`;
+const documentId = `urn:${btoa(
+  "urn:adsk.objects:os.object:e8d17563-1a4e-4471-bd72-a0a7e8d719bc/fileifc.ifc"
+)}`;
 
-const ROOM_ID = 'presence-autodesk';
+const ROOM_ID = "presence-autodesk";
 const PLAYER_ID = generateId();
 ```
 
@@ -111,12 +113,12 @@ const initializeSuperViz = useCallback(async () => {
     roomId: ROOM_ID,
     participant: {
       id: PLAYER_ID,
-      name: 'player-name',
+      name: "player-name",
     },
     group: {
-      id: 'presence-autodesk',
-      name: 'presence-autodesk',
-    }
+      id: "presence-autodesk",
+      name: "presence-autodesk",
+    },
   });
 
   const presence = new Presence3D(autodeskViewer.current!);
@@ -124,7 +126,7 @@ const initializeSuperViz = useCallback(async () => {
 
   const pinAdapter = new AutodeskPin(autodeskViewer.current!);
   const comments = new Comments(pinAdapter, {
-    buttonLocation: 'top-right',
+    buttonLocation: "top-right",
   });
   superviz.addComponent(comments);
 }, []);
@@ -141,22 +143,24 @@ const initializeSuperViz = useCallback(async () => {
 Create a function to handle the successful loading of the Autodesk document.
 
 ```tsx
-const onDocumentLoadSuccess = useCallback(async (document: Autodesk.Viewing.Document) => {
-  const viewable = document.getRoot().getDefaultGeometry();
+const onDocumentLoadSuccess = useCallback(
+  async (document: Autodesk.Viewing.Document) => {
+    const viewable = document.getRoot().getDefaultGeometry();
 
-  if(!viewable) return;
+    if (!viewable) return;
 
-  try {
-    await autodeskViewer.current!.loadDocumentNode(document, viewable, {
-      applyScaling: 'meters'
-    });
+    try {
+      await autodeskViewer.current!.loadDocumentNode(document, viewable, {
+        applyScaling: "meters",
+      });
 
-    await initializeSuperViz();
-  } catch (error) {
-    console.log('Document loaded failed', error);
-  }
-
-}, [initializeSuperViz]);
+      await initializeSuperViz();
+    } catch (error) {
+      console.log("Document loaded failed", error);
+    }
+  },
+  [initializeSuperViz]
+);
 ```
 
 **Explanation:**
@@ -170,7 +174,7 @@ Create a function to handle document loading failures.
 
 ```tsx
 const onDocumentLoadFailure = () => {
-  console.log('Document loaded failed');
+  console.log("Document loaded failed");
 };
 ```
 
@@ -184,25 +188,28 @@ Create a function to initialize the Autodesk Viewer with the necessary credentia
 
 ```tsx
 const initializeAutodesk = useCallback(async () => {
-  const viewerElement = document.getElementById('viewer')!;
+  const viewerElement = document.getElementById("viewer")!;
 
-  const response = await fetch('https://developer.api.autodesk.com/authentication/v2/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
-    },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      scope: 'data:read bucket:read',
-    }).toString()
-  });
+  const response = await fetch(
+    "https://developer.api.autodesk.com/authentication/v2/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+      },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        scope: "data:read bucket:read",
+      }).toString(),
+    }
+  );
 
   const data = await response.json();
 
   const options = {
-    env: 'AutodeskProduction2',
-    api: 'streamingV2',
+    env: "AutodeskProduction2",
+    api: "streamingV2",
     accessToken: data.access_token,
   };
 
@@ -219,9 +226,12 @@ const initializeAutodesk = useCallback(async () => {
     viewer.setProgressiveRendering(true);
 
     autodeskViewer.current = viewer;
-    window.Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+    window.Autodesk.Viewing.Document.load(
+      documentId,
+      onDocumentLoadSuccess,
+      onDocumentLoadFailure
+    );
   });
-
 }, [onDocumentLoadSuccess]);
 ```
 
@@ -237,12 +247,17 @@ Finally, return the JSX structure for rendering the Autodesk Viewer and the Supe
 
 ```tsx
 return (
-  <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-    <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-      <h1 className='text-white text-2xl font-bold'>SuperViz Presence Autodesk</h1>
+  <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+    <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+      <h1 className="text-white text-2xl font-bold">
+        SuperViz Presence Autodesk
+      </h1>
     </header>
-    <main className='w-full h-full flex items-center justify-center relative'>
-      <div id='viewer' className='w-full h-full overflow-hidden absolute top-0 left-0 w-full! h-full! z-0'></div>
+    <main className="w-full h-full flex items-center justify-center relative">
+      <div
+        id="viewer"
+        className="w-full h-full overflow-hidden absolute top-0 left-0 w-full! h-full! z-0"
+      ></div>
     </main>
   </div>
 );
@@ -259,14 +274,14 @@ return (
 Here's a quick overview of how the project structure supports real-time presence and commenting in an Autodesk Viewer application:
 
 1. **`App.tsx`**
-    - Initializes the SuperViz environment.
-    - Sets up the Autodesk Viewer with real-time presence and commenting features.
-    - Handles the loading of 3D models and integration of collaborative tools.
+   - Initializes the SuperViz environment.
+   - Sets up the Autodesk Viewer with real-time presence and commenting features.
+   - Handles the loading of 3D models and integration of collaborative tools.
 2. **Autodesk Viewer**
-    - Renders the 3D model, allowing users to navigate, inspect, and collaborate in a shared virtual space.
+   - Renders the 3D model, allowing users to navigate, inspect, and collaborate in a shared virtual space.
 3. **SuperViz Components**
-    - **Presence3D:** Displays real-time presence information, showing where each participant is looking or interacting in the 3D model.
-    - **AutodeskPin & Comments:** Enables users to add comments to specific locations in the 3D model, enhancing collaborative review sessions.
+   - **Presence3D:** Displays real-time presence information, showing where each participant is looking or interacting in the 3D model.
+   - **AutodeskPin & Comments:** Enables users to add comments to specific locations in the 3D model, enhancing collaborative review sessions.
 
 ---
 

@@ -10,7 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@superviz/sdk": "^6.6.0",
+    "@superviz/realtime": "^1.2.0",
+    "@superviz/sdk": "^6.7.0",
     "chess.js": "1.0.0-beta.8",
     "react": "^18.3.1",
     "react-chessboard": "^4.6.0",
