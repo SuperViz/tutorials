@@ -12,7 +12,7 @@ To begin, you'll need to set up a new React project where we will integrate the 
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest mouse-pointers-demo -- --template react-ts
@@ -49,30 +49,30 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using the `SuperVizRoomProvider` to manage the collaborative environment.
 
 ```tsx
-import { SuperVizRoomProvider } from '@superviz/react-sdk'
-import { v4 as generateId } from 'uuid'
-import Room from './Room'
+import { SuperVizRoomProvider } from "@superviz/react-sdk";
+import { v4 as generateId } from "uuid";
+import Room from "./Room";
 
 const developerKey = import.meta.env.VITE_SUPERVIZ_API_KEY;
-const participantId = generateId()
+const participantId = generateId();
 
 export default function App() {
   return (
     <SuperVizRoomProvider
       developerKey={developerKey}
       group={{
-        id: 'realtime-mouse-pointers',
-        name: 'realtime-mouse-pointers',
+        id: "realtime-mouse-pointers",
+        name: "realtime-mouse-pointers",
       }}
       participant={{
         id: participantId,
-        name: 'Participant',
+        name: "Participant",
       }}
-      roomId='realtime-mouse-pointers'
+      roomId="realtime-mouse-pointers"
     >
       <Room />
     </SuperVizRoomProvider>
-  )
+  );
 }
 ```
 
@@ -92,19 +92,21 @@ import { MousePointers } from "@superviz/react-sdk";
 
 export default function Room() {
   return (
-    <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-      <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-        <h1 className='text-white text-2xl font-bold'>SuperViz Real-Time Mouse Pointers</h1>
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+      <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+        <h1 className="text-white text-2xl font-bold">
+          SuperViz Real-Time Mouse Pointers
+        </h1>
       </header>
-      <main className='flex-1 w-full h-full'>
-        <div className='w-full h-full'>
-          <canvas id="canvas" className='w-full h-full'></canvas>
+      <main className="flex-1 w-full h-full">
+        <div className="w-full h-full">
+          <canvas id="canvas" className="w-full h-full"></canvas>
         </div>
 
         <MousePointers elementId="canvas" />
       </main>
     </div>
-  )
+  );
 }
 ```
 
@@ -121,12 +123,12 @@ export default function Room() {
 Here's a quick overview of how the project structure supports real-time mouse pointers:
 
 1. **`App.tsx`**
-    - Initializes the SuperViz environment.
-    - Sets up participant information and room details.
-    - Renders the `Room` component within the `SuperVizRoomProvider`.
+   - Initializes the SuperViz environment.
+   - Sets up participant information and room details.
+   - Renders the `Room` component within the `SuperVizRoomProvider`.
 2. **`Room.tsx`**
-    - Contains the main UI elements, including the canvas.
-    - Integrates the `MousePointers` component to show real-time cursor movements.
+   - Contains the main UI elements, including the canvas.
+   - Integrates the `MousePointers` component to show real-time cursor movements.
 
 ---
 

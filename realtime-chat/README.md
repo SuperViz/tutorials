@@ -14,7 +14,7 @@ To begin, you'll need to set up a new React project where we will integrate Supe
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest realtime-chat -- --template react-ts

@@ -32,7 +32,7 @@ npm install @superviz/sdk @superviz/realtime konva react-konva uuid
 ```
 
 - **@superviz/sdk:** For integrating real-time collaboration features.
-- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time
+- **@superviz/realtime:** SuperViz Real-Time library for integrating real-time.
 - **konva & react-konva:** Libraries for creating and managing a canvas-based drawing interface in React.
 - **uuid:** A library for generating unique identifiers, useful for creating unique participant IDs.
 

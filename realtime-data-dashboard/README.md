@@ -208,7 +208,7 @@ The frontend uses React to display real-time stock updates, connecting to the Su
 
 ### 1. Create a New React Project
 
-Initialize a new React application using Create React App with TypeScript.
+Initialize a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest
@@ -248,7 +248,6 @@ VITE_SUPERVIZ_SECRET_KEY=YOUR_SUPERVIZ_SECRET_KEY
 Create a directory `src/common` and add a `types.ts` file to define types used across the application.
 
 ```tsx
-typescriptCopy code
 // src/common/types.ts
 export type Stock = {
   symbol: string;
@@ -260,7 +259,6 @@ export type Stock = {
   low: number;
   updatedAt: string;
 };
-
 ```
 
 **Explanation:**
@@ -341,11 +339,7 @@ const initialize = useCallback(async () => {
           return newStock;
         }
 
-          return stock;
-          return stock;
-        });
         return stock;
-        });
       });
     });
   });

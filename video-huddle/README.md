@@ -8,7 +8,7 @@ To begin, you'll need to set up a new React project where we will integrate the 
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest video-huddle-app -- --template react-ts
@@ -47,8 +47,8 @@ Open `src/App.tsx` and set up the main application component using SuperViz to m
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from "react";
-import SuperVizRoom, { VideoConference, LauncherFacade } from '@superviz/sdk';
-import { v4 as generateId } from 'uuid';
+import SuperVizRoom, { VideoConference, LauncherFacade } from "@superviz/sdk";
+import { v4 as generateId } from "uuid";
 import { IoIosCall } from "react-icons/io";
 ```
 
@@ -100,12 +100,12 @@ const initialize = useCallback(async () => {
     roomId: ROOM_ID,
     participant: {
       id: generateId(),
-      name: 'participant-name',
+      name: "participant-name",
     },
     group: {
-      id: 'video-huddle',
-      name: 'video-huddle',
-    }
+      id: "video-huddle",
+      name: "video-huddle",
+    },
   });
 
   setInitialized(true);
@@ -126,7 +126,7 @@ const initializeVideo = useCallback(() => {
   if (!initialized || !superviz.current) return;
 
   const video = new VideoConference({
-    participantType: 'host',
+    participantType: "host",
   });
 
   superviz.current.addComponent(video);
@@ -161,18 +161,20 @@ Return the JSX structure for rendering the application, including the video conf
 ```tsx
 return (
   <>
-    <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-      <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-        <h1 className='text-white text-2xl font-bold'>Video Huddle</h1>
-        {
-          !videoInitialized && (
-            <button className="rounded-full bg-green-400 p-3 text-white text-lg disabled:opacity-75" onClick={initializeVideo} disabled={!initialized}>
-              <IoIosCall />
-            </button>
-          )
-        }
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
+      <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
+        <h1 className="text-white text-2xl font-bold">Video Huddle</h1>
+        {!videoInitialized && (
+          <button
+            className="rounded-full bg-green-400 p-3 text-white text-lg disabled:opacity-75"
+            onClick={initializeVideo}
+            disabled={!initialized}
+          >
+            <IoIosCall />
+          </button>
+        )}
       </header>
-      <main className='w-full h-full bg-app-background bg-[24px_10%] bg-no-repeat bg-[length:70%_auto]'></main>
+      <main className="w-full h-full bg-app-background bg-[24px_10%] bg-no-repeat bg-[length:70%_auto]"></main>
     </div>
   </>
 );
@@ -190,14 +192,14 @@ return (
 Here's a quick overview of how the project structure supports video huddles:
 
 1. **`App.tsx`**
-    - Initializes the SuperViz environment.
-    - Sets up participant information and room details.
-    - Handles video conferencing initialization and interaction.
+   - Initializes the SuperViz environment.
+   - Sets up participant information and room details.
+   - Handles video conferencing initialization and interaction.
 2. **Video Conferencing**
-    - Uses the `VideoConference` component from SuperViz to manage video huddles.
-    - Allows users to start a video call directly within the application.
+   - Uses the `VideoConference` component from SuperViz to manage video huddles.
+   - Allows users to start a video call directly within the application.
 3. **Real-Time Collaboration**
-    - Supports real-time communication and interaction between participants during the video huddle.
+   - Supports real-time communication and interaction between participants during the video huddle.
 
 ---
 

@@ -12,7 +12,7 @@ To begin, you'll need to set up a new React project where we will integrate the 
 
 ### 1. Create a New React Project
 
-First, create a new React application using Create React App with TypeScript.
+First, create a new React application using Vite with TypeScript.
 
 ```bash
 npm create vite@latest realtime-notes-app -- --template react-ts
@@ -56,11 +56,7 @@ import SuperVizRoom, {
   MousePointers,
   WhoIsOnline,
 } from "@superviz/sdk";
-import {
-  Realtime,
-  type RealtimeMessage,
-  type Channel,
-} from "@superviz/realtime/client";
+import { Realtime, type Channel } from "@superviz/realtime/client";
 import { v4 as generateId } from "uuid";
 import { NoteNode } from "./components/note-node";
 import { Note } from "./common/types";
@@ -123,8 +119,6 @@ const initialize = useCallback(async () => {
       id: 'video-huddle-application',
       name: 'video-huddle-application',
     },
-    environment: 'dev',
-    debug: true,
   })
 ```
 
@@ -397,3 +391,5 @@ This command will start the development server and open your application in the 
 In this tutorial, we built a collaborative notes application using SuperViz for real-time synchronization. We configured a React application to handle note editing, enabling multiple users to collaborate seamlessly on shared notes. This setup can be extended and customized to fit various scenarios where real-time collaboration and document editing are required.
 
 Feel free to explore the full code and further examples in the [GitHub repository](https://github.com/SuperViz/tutorials/tree/main/realtime-notes-application) for more details.
+
+>
