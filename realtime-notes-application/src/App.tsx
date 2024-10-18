@@ -4,11 +4,7 @@ import SuperVizRoom, {
   MousePointers,
   WhoIsOnline,
 } from "@superviz/sdk";
-import {
-  Realtime,
-  type RealtimeMessage,
-  type Channel,
-} from "@superviz/realtime/client";
+import { Realtime, type Channel } from "@superviz/realtime/client";
 import { v4 as generateId } from "uuid";
 import { NoteNode } from "./components/note-node";
 import { Note } from "./common/types";
@@ -50,8 +46,8 @@ export default function App() {
 
     channel.current = await realtime.connect("realtime-sync");
 
-    channel.current.subscribe("note-change", (event: RealtimeMessage) => {
-      const note = event.data as Note;
+    channel.current.subscribe<Note>("note-change", (event) => {
+      const note = event.data;
 
       if (event.participantId === PARTICIPANT_ID || !note) return;
 
