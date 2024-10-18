@@ -28,6 +28,7 @@ Here is a list of tutorials available in this repository:
 - [Step-by-Step Tutorial: How to add real-time who is online feature to your web-application](https://github.com/SuperViz/tutorials/tree/main/who-is-online)
 - [Step-by-Step Tutorial: Learn how to build a real-time chat](https://github.com/SuperViz/tutorials/tree/main/realtime-chat)
 - [Step-by-Step Tutorial: How to build a collaborative Drawing App](https://github.com/SuperViz/tutorials/tree/main/drawing-app)
+- [Step-by-Step Tutorial: Step-by-Step Tutorial: How to add users and manage groups in SuperViz](https://github.com/SuperViz/tutorials/tree/main/participant-management-dashboard)
 
 ### Contributing
 
