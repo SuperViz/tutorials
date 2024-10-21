@@ -157,7 +157,7 @@ const interval = setInterval(async () => {
       const channelId = "stock-price";
 
       const response = await fetch(
-        `https://nodeapi.superviz.com/realtime/${channelId}/publish`,
+        `https://api.superviz.com/realtime/${channelId}/publish`,
         {
           method: "POST",
           headers: {

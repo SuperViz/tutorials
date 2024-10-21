@@ -83,7 +83,7 @@ app.post("/notify", (req, res) => {
 
   setTimeout(async () => {
     const response = await fetch(
-      `https://nodeapi.superviz.com/realtime/${channel}/publish`,
+      `https://api.superviz.com/realtime/${channel}/publish`,
       {
         method: "POST",
         headers: {
