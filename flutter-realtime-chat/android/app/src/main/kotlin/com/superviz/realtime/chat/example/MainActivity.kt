@@ -1,4 +1,4 @@
-package com.superviz.realtime.chat.example.realtime_chat_example
+package com.superviz.realtime.chat.example
 
 import io.flutter.embedding.android.FlutterActivity
 
