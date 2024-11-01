@@ -6,7 +6,7 @@ To start, let's see how to build this app.
 
 ## Setting app environment variables
 
-On project folder create a `.env` file than add to file:
+On project folder create a `.env` file then add to file:
 
 ```bash
 CLIENT_ID=YOUR_CLIENT_ID
