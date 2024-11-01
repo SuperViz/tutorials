@@ -6,7 +6,7 @@ To start, let's see how to build this app.
 
 ## Android configuration
 
-To run this app on Android, you'll need to create a `.env` file on `android/` folder than add to file:
+To run this app on Android, you'll need to create a `.env` file on `android/` folder, then add to file:
 
 ```
 MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
@@ -46,7 +46,7 @@ OR
 
 ## Setting app environment variables
 
-On project folder create a `.env` file than add to file:
+On project folder create a `.env` file then add to file:
 
 ```bash
 CLIENT_ID=YOUR_CLIENT_ID
