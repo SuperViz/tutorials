@@ -45,3 +45,4 @@ app.*.map.json
 # MacOs releated
 .DS_Store
 .env
+pubspec.lock
