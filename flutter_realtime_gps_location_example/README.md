@@ -1,12 +1,12 @@
 # Live Location App with Superviz Realtime
 
-This app is an example of how to use the superviz realtime to tracking location.
+This app is an example of how to use the superviz realtime package to tracking location.
 
 To start, let's see how to build this app.
 
 ## Android configuration
 
-To run this app on Android, you'll need to create a `.env` file on `android/` than add to file:
+To run this app on Android, you'll need to create a `.env` file on `android/` folder than add to file:
 
 ```
 MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
@@ -15,7 +15,7 @@ MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
 ## iOS configuration
 
 To run this app on iOS, you'll need to create a `Secret.swift` file
-on `ios/Runner/`.
+on `ios/Runner/` folder.
 
 ### Creating `Secret.swift`
 
@@ -25,7 +25,7 @@ On terminal, move to project folder, and run:
 touch ios/Runner/Secret.swift
 ```
 
-Open Secret file and add the code bellow
+Open `Secret.swift` file and add the code bellow
 
 ```swift
 enum Secrets {
@@ -35,7 +35,7 @@ enum Secrets {
 
 and add this file on your Runner.xcworkspace.
 
-### Adding Secret.swift file on your Runner.xcworkspace:
+### Adding file on your Runner.xcworkspace:
 Open XCode then:
 
 `File > Add File To "Runner"...` then select `Secrets.swift` file.
