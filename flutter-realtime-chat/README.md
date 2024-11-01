@@ -1,16 +1,24 @@
-# realtime_chat_example
+# Chat App with Superviz Realtime
 
-A new Flutter project.
+This app is an example of how to use the superviz realtime to create a chat app.
 
-## Getting Started
+To start, let's see how to build this app.
 
-This project is a starting point for a Flutter application.
+## Setting app environment variables
 
-A few resources to get you started if this is your first Flutter project:
+On project folder create a `.env` file than add to file:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+CLIENT_ID=YOUR_CLIENT_ID
+SECRET=YOUR_SECRET
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Running
+
+After done all steps just run on terminar:
+
+```bash
+flutter run --dart-define-from-file=.env
+```
+
+Or on VSCode just press `F5`
