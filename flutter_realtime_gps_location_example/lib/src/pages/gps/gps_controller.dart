@@ -64,9 +64,9 @@ class GpsController extends ChangeNotifier {
         (RealtimeChannelState state) {
           switch (state) {
             case RealtimeChannelState.connected:
-              _channel!.participant.getAll().then((participants) {
-                _connectedUsers.addAll(participants);
-              });
+              _connectedUsers.addAll(
+                _channel!.participant.getAll(),
+              );
               _listenToGpsPosition();
               break;
             case RealtimeChannelState.connecting:
@@ -98,7 +98,7 @@ class GpsController extends ChangeNotifier {
 
   void _onNewUser() {
     return _channel!.participant.subscribe(
-      PresenceEvents.joinedRoom,
+      PresenceEvents.joinedRoom.description,
       (connectedUser) {
         _connectedUsers.add(connectedUser);
       },
@@ -106,11 +106,14 @@ class GpsController extends ChangeNotifier {
   }
 
   void _onLeaveUser() {
-    return _channel!.participant.subscribe(PresenceEvents.leave, (presence) {
-      _connectedUsers.remove(presence);
-      _positions.removeWhere((position) => position.userId == presence.id);
-      notifyListeners();
-    });
+    return _channel!.participant.subscribe(
+      PresenceEvents.leave.description,
+      (presence) {
+        _connectedUsers.remove(presence);
+        _positions.removeWhere((position) => position.userId == presence.id);
+        notifyListeners();
+      },
+    );
   }
 
   void _subscribeToRecivePositions() {
