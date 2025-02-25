@@ -1,5 +1,5 @@
 import { createRoom } from "@superviz/room";
-import { VideoConference } from "@superviz/video";
+import { MeetingState, VideoConference, VideoEvent } from "@superviz/video";
 
 import { useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
@@ -29,7 +29,6 @@ const App = () => {
           id: "GROUP_ID",
           name: "GROUP_NAME",
         },
-        environment: "dev",
       });
 
       const video = new VideoConference({
@@ -39,8 +38,8 @@ const App = () => {
         },
       });
 
-      video.subscribe("meeting.state.update", onMeetingStateUpdate);
-      video.subscribe("participant.left", onParticipantLeft);
+      video.subscribe(VideoEvent.MEETING_STATE_UPDATE, onMeetingStateUpdate);
+      video.subscribe(VideoEvent.MY_PARTICIPANT_LEFT, onParticipantLeft);
 
       room.addComponent(video);
     } catch (error) {
@@ -48,14 +47,12 @@ const App = () => {
     }
   };
 
-  const onMeetingStateUpdate = (meetingState: any) => {
-
+  const onMeetingStateUpdate = (meetingState: MeetingState) => {
     // settings mounted remove loading ::
-    if (meetingState === 2) setIsLoading(false);
-
+    if (meetingState === MeetingState.MEETING_READY_TO_JOIN) setIsLoading(false);
   };
 
-  const onParticipantLeft = (participant: any) => {
+  const onParticipantLeft = () => {
     setMeetingEnded(true);
   };
 

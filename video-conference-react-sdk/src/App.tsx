@@ -1,5 +1,5 @@
 import { RoomProvider, useRoom, useVideo } from '@superviz/react'
-import { VideoConference } from "@superviz/video";
+import { VideoConference, MeetingState } from "@superviz/video";
 
 import { useState } from 'react';
 import { ImSpinner2 } from "react-icons/im";
@@ -13,8 +13,8 @@ export const Children = () => {
 
   // SuperViz useVideo hook ::
   useVideo({
-    onMeetingStateUpdate: (meetingState: any) => {
-      if (meetingState === 2) setIsLoading(false);
+    onMeetingStateUpdate: (state) => {
+      if (state === MeetingState.MEETING_READY_TO_JOIN) setIsLoading(false);
     },
     onParticipantLeft: () => setMeetingEnded(true),
   });
@@ -38,11 +38,13 @@ export const Children = () => {
           id: "GROUP_ID",
         },
         roomId: `ROOM_ID`,
-        environment: "dev",
       });
 
       const video = new VideoConference({
-        participantType: 'host'
+        participantType: 'host',
+        brand: {
+          logoUrl: "https://docs.superviz.com/logo-white.svg",
+        },
       });
 
       addComponent(video);
