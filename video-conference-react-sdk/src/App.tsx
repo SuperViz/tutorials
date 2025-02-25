@@ -1,55 +1,55 @@
-import { useState } from "react";
-import { createRoom } from "@superviz/room";
-import { VideoHuddle } from "@superviz/video";
+import { RoomProvider, useRoom, useVideo } from '@superviz/react'
+import { VideoConference } from "@superviz/video";
+
+import { useState } from 'react';
 import { ImSpinner2 } from "react-icons/im";
 
+// SuperViz developer token ::
 const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
 
-const App = () => {
+export const Children = () => {
+  // SuperViz userRoom hook ::
+  const { joinRoom, addComponent } = useRoom();
+
+  // SuperViz useVideo hook ::
+  useVideo({
+    onMeetingStateUpdate: (meetingState: any) => {
+      if (meetingState === 2) setIsLoading(false);
+    },
+    onParticipantLeft: () => setMeetingEnded(true),
+  });
+
+  // States ::
   const [isLoading, setIsLoading] = useState(false);
   const [meetingEnded, setMeetingEnded] = useState(false);
 
+  // Initialize ::
   const initialize = async () => {
-
     setIsLoading(true);
 
     try {
-      const room = await createRoom({
-        developerToken: DEVELOPER_TOKEN,
-        roomId: "ROOM_ID",
+      await joinRoom({
         participant: {
           id: Math.floor(Math.random() * 100).toString(),
           name: " ",
         },
         group: {
-          id: "GROUP_ID",
           name: "GROUP_NAME",
+          id: "GROUP_ID",
         },
+        roomId: `ROOM_ID`,
         environment: "dev",
       });
 
-      const huddle = new VideoHuddle({
-        participantType: "host",
+      const video = new VideoConference({
+        participantType: 'host'
       });
 
-      huddle.subscribe("meeting.state.update", onMeetingStateUpdate);
-      huddle.subscribe("participant.left", onParticipantLeft);
+      addComponent(video);
 
-      room.addComponent(huddle);
     } catch (error) {
       console.error("Error initializing SuperViz Room:", error);
     }
-  };
-
-  const onMeetingStateUpdate = (meetingState: any) => {
-
-    // settings mounted remove loading ::
-    if (meetingState === 2) setIsLoading(false);
-
-  };
-
-  const onParticipantLeft = (participant: any) => {
-    setMeetingEnded(true);
   };
 
   return (
@@ -57,17 +57,25 @@ const App = () => {
       {isLoading ? (
           <ImSpinner2 className="text-4xl text-white animate-spin" />
       ) : meetingEnded ? (
-        <div className="text-lg font-semibold text-white">Thank you for joining the video huddle</div>
+        <div className="text-lg font-semibold text-white">Thank you for joining the video conference</div>
       ) : (
         <button
           className="bg-[#6210cc] text-white px-5 py-3 text-xs rounded-lg"
           onClick={initialize}
         >
-          START VIDEO HUDDLE
+          START VIDEO CONFERENCE
         </button>
       )}
     </div>
   );
 };
+
+export function App() {
+  return (
+    <RoomProvider developerToken={DEVELOPER_TOKEN}>
+      <Children />
+    </RoomProvider>
+  )
+}
 
 export default App;

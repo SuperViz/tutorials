@@ -1,14 +1,18 @@
-import { useState } from "react";
 import { createRoom } from "@superviz/room";
-import { VideoHuddle } from "@superviz/video";
+import { VideoConference } from "@superviz/video";
+
+import { useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
 
+// SuperViz developer token ::
 const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
 
 const App = () => {
+  // States ::
   const [isLoading, setIsLoading] = useState(false);
   const [meetingEnded, setMeetingEnded] = useState(false);
 
+  // Initialize ::
   const initialize = async () => {
 
     setIsLoading(true);
@@ -28,14 +32,17 @@ const App = () => {
         environment: "dev",
       });
 
-      const huddle = new VideoHuddle({
+      const video = new VideoConference({
         participantType: "host",
+        brand: {
+          logoUrl: "https://docs.superviz.com/logo-white.svg",
+        },
       });
 
-      huddle.subscribe("meeting.state.update", onMeetingStateUpdate);
-      huddle.subscribe("participant.left", onParticipantLeft);
+      video.subscribe("meeting.state.update", onMeetingStateUpdate);
+      video.subscribe("participant.left", onParticipantLeft);
 
-      room.addComponent(huddle);
+      room.addComponent(video);
     } catch (error) {
       console.error("Error initializing SuperViz Room:", error);
     }
@@ -57,13 +64,13 @@ const App = () => {
       {isLoading ? (
           <ImSpinner2 className="text-4xl text-white animate-spin" />
       ) : meetingEnded ? (
-        <div className="text-lg font-semibold text-white">Thank you for joining the video huddle</div>
+        <div className="text-lg font-semibold text-white">Thank you for joining the video conference</div>
       ) : (
         <button
           className="bg-[#6210cc] text-white px-5 py-3 text-xs rounded-lg"
           onClick={initialize}
         >
-          START VIDEO HUDDLE
+          START VIDEO CONFERENCE
         </button>
       )}
     </div>
