@@ -39,7 +39,6 @@ export const Children = () => {
           id: "GROUP_ID",
         },
         roomId: `ROOM_ID`,
-        environment: "dev",
       });
 
       const video = new VideoHuddle({
