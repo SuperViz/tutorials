@@ -3,6 +3,7 @@ import { VideoConference, MeetingState } from "@superviz/video";
 
 import { useState } from 'react';
 import { ImSpinner2 } from "react-icons/im";
+import { v4 as generateId } from 'uuid'
 
 // SuperViz developer token ::
 const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
@@ -30,7 +31,7 @@ export const Children = () => {
     try {
       await joinRoom({
         participant: {
-          id: Math.floor(Math.random() * 100).toString(),
+          id: generateId(),
           name: " ",
         },
         group: {
