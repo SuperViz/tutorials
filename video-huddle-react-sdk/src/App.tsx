@@ -46,9 +46,6 @@ export const Children = () => {
 
       const video = new VideoHuddle({
         participantType: 'host',
-        brand: {
-          logoUrl: "https://docs.superviz.com/logo-white.svg",
-        },
       });
 
       addComponent(video);

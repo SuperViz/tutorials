@@ -2,7 +2,7 @@ import { Presence3D } from '@superviz/matterport-plugin';
 import { VideoHuddle } from "@superviz/video";
 import { useCallback, useEffect, useRef } from "react";
 import { v4 as generateId } from 'uuid';
-// @ts-expect-error TODO: fix types
+// @ts-expect-error
 import type { MpSdk } from '@superviz/matterport-plugin/dist/common/types/matterport.types.d.ts';
 import { createRoom } from '@superviz/room';
 
