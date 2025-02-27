@@ -3,6 +3,7 @@ import { MeetingState, VideoConference, VideoEvent } from "@superviz/video";
 
 import { useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
+import { v4 as generateId } from 'uuid'
 
 // SuperViz developer token ::
 const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
@@ -22,7 +23,7 @@ const App = () => {
         developerToken: DEVELOPER_TOKEN,
         roomId: "ROOM_ID",
         participant: {
-          id: Math.floor(Math.random() * 100).toString(),
+          id: generateId(),
           name: " ",
         },
         group: {
