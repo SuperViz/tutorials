@@ -526,39 +526,62 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz#821f8442f4175d8f0467b9daf26e3a18e2d02af2"
   integrity sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==
 
-"@superviz/realtime@1.2.0-lab.7":
-  version "1.2.0-lab.7"
-  resolved "https://registry.yarnpkg.com/@superviz/realtime/-/realtime-1.2.0-lab.7.tgz#266d1c40c2dc0405720a0d2438bf702cf9dc7706"
-  integrity sha512-/4RWjRSB2n5Km8i/nxGlyZriYizg4TQsKJhMp3voT1QIEP4FczdnIu17d0myrpzeDS4pElO1BY+bXHYMdUEE7A==
+"@superviz/collaboration@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@superviz/collaboration/-/collaboration-1.0.0.tgz#32969fd2878e08433eccd26813d6dfacfb55ab45"
+  integrity sha512-rR3ywXiW7GphYZ/PG+8Wk/+FRy/DFGt6N07nD2QqabsBfpd7I0S5Ns+jy/LPAF5kDThDiMh1bzVobSZJU+hpeA==
   dependencies:
-    "@superviz/socket-client" "1.13.0-lab.11"
-    browser-or-node "^3.0.0"
-    debug "^4.3.4"
-    lodash "^4.17.21"
-    rxjs "^7.8.1"
-
-"@superviz/sdk@^6.6.0":
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/@superviz/sdk/-/sdk-6.6.0.tgz#ad812acfa53dd18ba6c0ca9733c18053e00ba6a7"
-  integrity sha512-fNswMeKeTXTPQhlLrKt6qLDkNjUe5fwtzYUERoh4hfYeVD2xHXC1yE8sDFcl1xOjM1WefD7QjiRdVhwXtDXMTA==
-  dependencies:
-    "@superviz/socket-client" "^1.10.0"
+    "@superviz/socket-client" "1.16.0"
     bowser "^2.11.0"
     bowser-jr "^1.0.6"
     debug "^4.3.4"
     lit "^3.1.4"
     lodash "^4.17.21"
-    lodash.debounce "^4.0.8"
-    lodash.isequal "^4.5.0"
     luxon "^3.4.4"
     rxjs "^7.8.1"
-    semantic-release-version-file "^1.0.2"
     zod "^3.23.8"
 
-"@superviz/socket-client@1.13.0-lab.11":
-  version "1.13.0-lab.11"
-  resolved "https://registry.yarnpkg.com/@superviz/socket-client/-/socket-client-1.13.0-lab.11.tgz#70191843026de799bb905de5d1c72a47b9641938"
-  integrity sha512-uPx074QrLxI1+bRICqt+A+npNM/Q9ZAWPFCYRfSanuBmKLWFLxWX5PuUqtgVMGW06O5AuO9m5ygpHXDs4i5xmQ==
+"@superviz/realtime@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@superviz/realtime/-/realtime-1.3.0.tgz#8208054e5b3baf67ae90eea2eefecad443cc7e51"
+  integrity sha512-tX04audGq8OHPfO3UprX/yBqtb4ZNCUaXSnBaLJPxCYCk8BeGD73q5TJvAfMmYQ7dWk/XGzxCGOden1vSqSyoA==
+  dependencies:
+    "@superviz/socket-client" "1.14.0"
+    browser-or-node "^3.0.0"
+    debug "^4.3.4"
+    lodash "^4.17.21"
+    rxjs "^7.8.1"
+
+"@superviz/room@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@superviz/room/-/room-1.0.0.tgz#4200d711a0740ba5dc94e1099d0bb0aaf2fb5259"
+  integrity sha512-ZC/Sqvm1g1Rli7iau0N5n8tTQl8bQDqcEyfbOMEFkgBe2O+JEtUGOJTpNvHG39BqtFD99nBwjdkUnSHvmWoyRg==
+  dependencies:
+    "@superviz/socket-client" "1.16.0"
+    debug "^4.3.4"
+    lodash "^4.17.21"
+    rxjs "^7.8.1"
+    zod "^3.23.8"
+
+"@superviz/sdk@^6.7.0":
+  version "6.10.0"
+  resolved "https://registry.yarnpkg.com/@superviz/sdk/-/sdk-6.10.0.tgz#1361d7cf4f892846be8d4bd2e7fe6198de033e8d"
+  integrity sha512-+Mi6OL0I/4ZgeGIcvADg+J5WO08w+9wwHdYfXpbQCHGGCyqsGoj5L/RnXsG6UYP12j4eOYE7wrQRicb+hV9HHw==
+  dependencies:
+    "@superviz/socket-client" "1.16.0"
+    bowser "^2.11.0"
+    bowser-jr "^1.0.6"
+    debug "^4.3.4"
+    lit "^3.1.4"
+    lodash "^4.17.21"
+    luxon "^3.4.4"
+    rxjs "^7.8.1"
+    zod "^3.23.8"
+
+"@superviz/socket-client@1.14.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@superviz/socket-client/-/socket-client-1.14.0.tgz#bf537330095840fc5829df682814d6c9eb7b9459"
+  integrity sha512-oHNbKsPr5DaLN2lO5Umdyv1Eyzg0/MJPmqU24KjVOI/5/oBZHRdQr9Hk4FSz49+0TXg7yk2E4+6xy+20zE460A==
   dependencies:
     "@reactivex/rxjs" "^6.6.7"
     debug "^4.3.5"
@@ -567,16 +590,15 @@
     socket.io-client "^4.7.5"
     zod "^3.23.8"
 
-"@superviz/socket-client@^1.10.0":
-  version "1.12.2"
-  resolved "https://registry.yarnpkg.com/@superviz/socket-client/-/socket-client-1.12.2.tgz#49b4d8fe11c09391507bd9d68626abdfe1eb2ea9"
-  integrity sha512-6TxzdZqDWpugdEdMC4r5O1JPKShY8d5zMcnODE/hqiveFrIgrScnYY6/EdoKzW7ePucv+ZrZ4flg4HYI2zJ5HQ==
+"@superviz/socket-client@1.16.0":
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/@superviz/socket-client/-/socket-client-1.16.0.tgz#17cec79fcd24f0b24090ff91bfdccd5a910bdbd2"
+  integrity sha512-1fLd+nxFG+Ia/xtsdEj4ThyheGPFpBzlu3xgs6V6jmzeAPPRRTf8SQTsC5hUo2UOJJYLQG2TW3wZzmR5KvUB5g==
   dependencies:
     "@reactivex/rxjs" "^6.6.7"
     debug "^4.3.5"
     lodash "^4.17.21"
     rxjs "^7.8.1"
-    semantic-release-version-file "^1.0.2"
     socket.io-client "^4.7.5"
     zod "^3.23.8"
 
@@ -1593,16 +1615,6 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
-lodash.debounce@^4.0.8:
-  version "4.0.8"
-  resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
-  integrity sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==
-
-lodash.isequal@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
-  integrity sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==
-
 lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
@@ -2011,11 +2023,6 @@ scheduler@^0.23.2:
   integrity sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==
   dependencies:
     loose-envify "^1.1.0"
-
-semantic-release-version-file@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/semantic-release-version-file/-/semantic-release-version-file-1.0.2.tgz#d83f13336ba968e0e2c4fcf769e1fcad26e2200c"
-  integrity sha512-/kf9hqGfy0iceKDC1dXGKajKXYfDEHlGFynIaoXOTUv3szlZ4Io2i+7sLl46y4Fv2DCKLeM+3sC/0IWxsgpL9A==
 
 semver@^6.3.1:
   version "6.3.1"
