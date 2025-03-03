@@ -30,7 +30,6 @@ export const Children = () => {
           id: "GROUP_ID",
         },
         roomId: `ROOM_ID`,
-        environment: "dev",
       });
 
       const mousePointers = new MousePointers("canvas");
@@ -45,7 +44,7 @@ export const Children = () => {
   }, [initializeSuperViz]);
 
   useEffect(() => {
-    console.log('participantJoined', participantJoined);
+    console.log('effect', participantJoined);
   }, [participantJoined]);
 
   const initialize = async () => {
