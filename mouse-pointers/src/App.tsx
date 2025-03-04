@@ -1,5 +1,5 @@
 import { MousePointers } from '@superviz/collaboration';
-import { RoomProvider, useRoom } from '@superviz/react';
+import { RoomProvider, useRoom, Participant } from '@superviz/react';
 import { VideoHuddle } from "@superviz/video";
 import { useCallback, useEffect, useState } from "react";
 import { v4 as generateId } from 'uuid';
@@ -10,12 +10,16 @@ const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
 export const Children = () => {
   const [participantJoined, setParticipantJoined] = useState(false);
 
+  const onMyParticipantJoined = (participant: Participant) => {
+    console.log('Component: My participant joined', participant);
+    setParticipantJoined(true);
+  };
+
   const { joinRoom, addComponent } = useRoom({
-    onMyParticipantJoined: (participant) => {
-      console.log('Component: My participant joined', participant);
-      setParticipantJoined(true);
-    },
+    onMyParticipantJoined: onMyParticipantJoined,
   });
+
+
 
   // Use the joinRoom function from the hook in the callback
   const initializeSuperViz = useCallback(async () => {
@@ -43,9 +47,8 @@ export const Children = () => {
     initializeSuperViz();
   }, [initializeSuperViz]);
 
-  useEffect(() => {
-    console.log('effect', participantJoined);
-  }, [participantJoined]);
+  console.log('effect', participantJoined);
+
 
   const initialize = async () => {
     const video = new VideoHuddle({
