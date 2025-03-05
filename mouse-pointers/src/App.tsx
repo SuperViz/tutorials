@@ -1,5 +1,5 @@
 import { createRoom, ParticipantEvent, Room } from "@superviz/room";
-import { v4 as generateId } from 'uuid';
+import { v4 as generateId } from "uuid";
 
 import { useCallback, useEffect, useState, useRef } from "react";
 import { MousePointers } from "@superviz/collaboration";
@@ -17,7 +17,6 @@ const App = () => {
 
   // Initialize ::
   const initialize = useCallback(async () => {
-
     try {
       const room = await createRoom({
         developerToken: DEVELOPER_TOKEN,
@@ -35,12 +34,12 @@ const App = () => {
       // Store the room instance in the ref
       roomRef.current = room;
 
-      room.subscribe(ParticipantEvent.MY_PARTICIPANT_JOINED, () => setParticipantJoined(true));
+      room.subscribe(ParticipantEvent.MY_PARTICIPANT_JOINED, () =>
+        setParticipantJoined(true)
+      );
 
       const mousePointers = new MousePointers("canvas");
       room.addComponent(mousePointers);
-
-
     } catch (error) {
       console.error("Error initializing SuperViz Room:", error);
     }
@@ -52,10 +51,12 @@ const App = () => {
 
   const startHuddle = async () => {
     const video = new VideoHuddle({
-      participantType: 'host',
+      participantType: "host",
     });
 
-    video.subscribe(VideoEvent.MY_PARTICIPANT_JOINED, () => setHuddleStarted(true));
+    video.subscribe(VideoEvent.MY_PARTICIPANT_JOINED, () =>
+      setHuddleStarted(true)
+    );
 
     // Use the room instance from the ref
     if (roomRef.current) {
@@ -63,10 +64,9 @@ const App = () => {
     }
   };
 
-
   return (
-    <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col relative'>
-      <canvas id="canvas" className='w-full h-full'></canvas>
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col relative">
+      <canvas id="canvas" className="w-full h-full"></canvas>
 
       {participantJoined && !huddleStarted && (
         <button
