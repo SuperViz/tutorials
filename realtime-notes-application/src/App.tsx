@@ -48,6 +48,8 @@ export default function App() {
       channel.current.subscribe<Note>("note-change", (event) => {
         const note = event.data;
 
+
+
         if (event.participantId === PARTICIPANT_ID || !note) return;
 
         setNotes((previous) => {
@@ -109,6 +111,8 @@ export default function App() {
         return n;
       });
     });
+
+    console.log("channel.current", channel.current);
 
     if (channel.current) {
       channel.current.publish("note-change", note);
