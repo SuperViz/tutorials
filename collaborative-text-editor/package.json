@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
-    "@superviz/sdk": "^6.7.0",
+    "@superviz/room": "^1.0.0",
+    "@superviz/video": "^1.0.3",
     "@superviz/yjs": "^1.0.0",
     "monaco-editor": "^0.52.0",
     "quill-cursors": "^4.0.3",

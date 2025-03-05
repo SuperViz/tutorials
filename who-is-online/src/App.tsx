@@ -1,58 +1,83 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { LauncherFacade, WhoIsOnline } from '@superviz/sdk'
-import { v4 as generateId } from 'uuid'
+import { createRoom, ParticipantEvent, Room } from "@superviz/room";
+import { v4 as generateId } from "uuid";
 
-const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
-const ROOM_ID = 'who-is-online'
+import { useCallback, useEffect, useState, useRef } from "react";
+import {  WhoIsOnline } from "@superviz/collaboration";
+import { VideoEvent, VideoHuddle } from "@superviz/video";
 
-export default function App() {
-  const [initialized, setInitialized] = useState(false)
-  const superviz = useRef<LauncherFacade | null>(null)
+// SuperViz developer token ::
+const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
 
-  const initialize = useCallback(async () => { 
-    if(initialized) return
+const App = () => {
+  // States ::
+  const [participantJoined, setParticipantJoined] = useState(false);
+  const [huddleStarted, setHuddleStarted] = useState(false);
 
-    superviz.current = await SuperVizRoom(apiKey, {
-      roomId: ROOM_ID,
-      participant: { 
-        id: generateId(),
-        name: 'participant-name',
-      },
-      group: { 
-        id: 'who-is-online',
-        name: 'who-is-online',
-      }
-    })
+  const roomRef = useRef<Room | null>(null);
 
+  // Initialize ::
+  const initialize = useCallback(async () => {
+    try {
+      const room = await createRoom({
+        developerToken: DEVELOPER_TOKEN,
+        roomId: "ROOM_ID",
+        participant: {
+          id: generateId(),
+          name: "Name " + Math.floor(Math.random() * 10),
+        },
+        group: {
+          id: "GROUP_ID",
+          name: "GROUP_NAME",
+        },
+      });
 
-    const whoIsOnline = new WhoIsOnline({
-      position: 'who-is-online',
-      disablePresenceControls: true,
-    })
-    
-    superviz.current.addComponent(whoIsOnline)
+      // Store the room instance in the ref
+      roomRef.current = room;
 
-    setInitialized(true)
-  }, [initialized])
+      room.subscribe(ParticipantEvent.MY_PARTICIPANT_JOINED, () =>
+        setParticipantJoined(true)
+      );
+
+      const whoIsOnline = new WhoIsOnline();
+      room.addComponent(whoIsOnline);
+    } catch (error) {
+      console.error("Error initializing SuperViz Room:", error);
+    }
+  }, []);
 
   useEffect(() => {
-    initialize()
+    initialize();
+  }, [initialize]);
 
-    return () => {
-      superviz.current?.destroy()
+  const startHuddle = async () => {
+    const video = new VideoHuddle({
+      participantType: "host",
+    });
+
+    video.subscribe(VideoEvent.MY_PARTICIPANT_JOINED, () =>
+      setHuddleStarted(true)
+    );
+
+    // Use the room instance from the ref
+    if (roomRef.current) {
+      roomRef.current.addComponent(video);
     }
-  }, [])
+  };
 
   return (
-    <>
-      <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
-        <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
-          <h1 className='text-white text-2xl font-bold'>Who is Online</h1>
-        </header>
-        <main className='flex-1 p-20 flex w-full gap-2 items-center justify-center'>
-          <div id="who-is-online"></div>
-        </main>
-      </div>
-    </>
-  )
-}
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col relative">
+      <canvas id="canvas" className="w-full h-full"></canvas>
+
+      {participantJoined && !huddleStarted && (
+        <button
+          className="bg-[#6210cc] text-white px-5 py-3 text-xs rounded-lg absolute top-5 left-5 z-10"
+          onClick={startHuddle}
+        >
+          START VIDEO HUDDLE
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default App;

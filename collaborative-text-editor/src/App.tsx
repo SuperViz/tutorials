@@ -1,127 +1,88 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createRoom, ParticipantEvent, Room } from "@superviz/room";
 import { v4 as generateId } from "uuid";
 
+import { useCallback, useEffect, useState, useRef } from "react";
+import { VideoEvent, VideoHuddle } from "@superviz/video";
 import * as Y from "yjs";
-
-import { SuperVizYjsProvider } from "@superviz/yjs";
-
-import SuperVizRoom, {
-  type LauncherFacade,
-  type Participant,
-} from "@superviz/sdk";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { setColors } from "./setColors";
-
 import ReactQuill, { Quill } from "react-quill-new";
 import { QuillBinding } from "y-quill";
 import QuillCursors from "quill-cursors";
 
-// import "react-quill-new/dist/quill.snow.css";
+import { SuperVizYjsProvider } from "@superviz/yjs";
 
-const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-
-const ROOM_ID = "collaborative-text-editor";
-const PLAYER_ID = generateId();
+// SuperViz developer token ::
+const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
 
 const ydoc = new Y.Doc();
 const provider = new SuperVizYjsProvider(ydoc);
 
 Quill.register("modules/cursors", QuillCursors);
 
-export default function App() {
-  const initialized = useRef(false);
+const App = () => {
+  // States ::
+  const [participantJoined, setParticipantJoined] = useState(false);
+  const [huddleStarted, setHuddleStarted] = useState(false);
   const [ids, setIds] = useState(new Set<number>());
-  const room = useRef<LauncherFacade>();
   const quillRef = useRef<ReactQuill | null>(null);
 
+  const roomRef = useRef<Room | null>(null);
+
+  // Initialize ::
   const initialize = useCallback(async () => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    const superviz = await SuperVizRoom(apiKey, {
-      roomId: ROOM_ID,
-      participant: {
-        id: PLAYER_ID,
-        name: "player-name",
-      },
-      group: {
-        id: "chess-game",
-        name: "chess-game",
-      },
-      environment: "dev",
-      debug: true,
-    });
-
-    superviz.addComponent(provider);
-
-    superviz.subscribe("participant.updated", (data: Participant) => {
-      if (!data.slot?.index) return;
-
-      provider.awareness?.setLocalStateField("participant", {
-        id: data.id,
-        slot: data.slot,
-        name: data.name,
+    try {
+      const room = await createRoom({
+        developerToken: DEVELOPER_TOKEN,
+        roomId: "ROOM_ID",
+        participant: {
+          id: generateId(),
+          name: "Name " + Math.floor(Math.random() * 10),
+        },
+        group: {
+          id: "GROUP_ID",
+          name: "GROUP_NAME",
+        },
+        environment: "dev",
       });
-    });
 
-    const updateStyles = () => {
-      const states = provider.awareness?.getStates();
-      const idsList = setColors(states, ids);
+      // Store the room instance in the ref
+      roomRef.current = room;
 
-      setIds(new Set(idsList));
-    };
+      room.subscribe(ParticipantEvent.PARTICIPANT_UPDATED, (participant) => {
+        console.log(participant.slot?.index);
+        setParticipantJoined(true)
+      });
 
-    provider.once("connect", updateStyles);
-    provider.awareness?.once("change", updateStyles);
-    provider.awareness?.on("update", updateStyles);
 
-    const style = document.createElement("style");
-    style.id = "sv-yjs-quill";
-    document.head.appendChild(style);
-
-    return superviz;
-  }, [initialized, ids]);
-
-  useEffect(() => {
-    (async () => {
-      room.current = await initialize();
-    })();
+    } catch (error) {
+      console.error("Error initializing SuperViz Room:", error);
+    }
   }, []);
 
   useEffect(() => {
-    if (!provider || !quillRef.current) return;
+    initialize();
+  }, [initialize]);
 
-    const binding = new QuillBinding(
-      ydoc.getText("quill"),
-      quillRef.current.getEditor(),
-      provider.awareness
+  const startHuddle = async () => {
+    const video = new VideoHuddle({
+      participantType: "host",
+    });
+
+    video.subscribe(VideoEvent.MY_PARTICIPANT_JOINED, () =>
+      setHuddleStarted(true)
     );
 
-    return () => {
-      binding.destroy();
-    };
-  }, [ydoc, provider]);
+    // Use the room instance from the ref
+    if (roomRef.current) {
+      roomRef.current.addComponent(video);
+    }
+  };
 
   return (
-    <div className="p-5 h-full bg-gray-200 flex flex-col gap-5">
-      <div className="bg-[#1e1e1e] shadow-none h-[90%] overflow-auto rounded-sm">
-        <ReactQuill
-          placeholder="// Connect to the room to start collaborating"
-          ref={quillRef}
-          theme="snow"
-          modules={{
-            cursors: true,
-            toolbar: [
-              [{ header: [1, 2, false] }],
-              ["bold", "italic", "underline"],
-              ["image", "code-block"],
-            ],
-            history: {
-              userOnly: true,
-            },
-          }}
-        />{" "}
-      </div>
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col relative">
+
     </div>
   );
-}
+};
+
+export default App;
