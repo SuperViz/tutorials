@@ -1,46 +1,54 @@
-import { v4 as generateId } from 'uuid'
-import { useCallback, useEffect, useRef } from "react"
-import SuperVizRoom, { Comments } from '@superviz/sdk'
-import { Presence3D, AutodeskPin } from '@superviz/autodesk-viewer-plugin'
+import { createRoom, Room } from "@superviz/room";
+import { v4 as generateId } from "uuid";
 
-const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
-const clientId = import.meta.env.VITE_AUTODESK_CLIENT_ID as string
-const clientSecret = import.meta.env.VITE_AUTODESK_CLIENT_SECRET as string
-const documentId = `urn:${btoa("urn:adsk.objects:os.object:e8d17563-1a4e-4471-bd72-a0a7e8d719bc/fileifc.ifc")}`
+import { useCallback, useEffect, useRef } from "react";
+import { Presence3D, AutodeskPin } from "@superviz/autodesk-viewer-plugin";
+import { Comments } from "@superviz/collaboration";
 
-const ROOM_ID = 'presence-autodesk'
-const PLAYER_ID = generateId()
+// SuperViz developer token ::
+const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
+const CLIENT_ID = import.meta.env.VITE_FORGE_CLIENT_ID as string
+const CLIENT_SECRET = import.meta.env.VITE_FORGE_CLIENT_SECRET as string
+const DOCUMENT_ID = `urn:${btoa("urn:adsk.objects:os.object:e8d17563-1a4e-4471-bd72-a0a7e8d719bc/fileifc.ifc")}`
 
-export default function App() {
+const App = () => {
   const autodeskViewer = useRef<Autodesk.Viewing.GuiViewer3D | null>(null)
+  const roomRef = useRef<Room | null>(null);
 
-  useEffect(() => {
-    initializeAutodesk()
-  }, [])
+  // Initialize ::
+  const initializeSuperViz = useCallback(async () => {
+    try {
+      const room = await createRoom({
+        developerToken: DEVELOPER_TOKEN,
+        roomId: "ROOM_ID",
+        participant: {
+          id: generateId(),
+          name: "Name " + Math.floor(Math.random() * 10),
+        },
+        group: {
+          id: "GROUP_ID",
+          name: "GROUP_NAME",
+        },
+      });
 
-  const initializeSuperViz = useCallback(async () => { 
-    const superviz = await SuperVizRoom(apiKey, {
-      roomId: ROOM_ID,
-      participant: { 
-        id: PLAYER_ID,
-        name: 'player-name',
-      },
-      group: { 
-        id: 'presence-autodesk',
-        name: 'presence-autodesk',
-      }
-    })
+      // Store the room instance in the ref
+      roomRef.current = room;
 
-    const presence = new Presence3D(autodeskViewer.current!)
-    superviz.addComponent(presence)
+      const presence = new Presence3D(autodeskViewer.current!,{
+        isAvatarsEnabled: false
+      })
+      room.addComponent(presence)
 
-    const pinAdapter = new AutodeskPin(autodeskViewer.current!)
+      const pinAdapter = new AutodeskPin(autodeskViewer.current!)
     const comments = new Comments(pinAdapter, {
-      buttonLocation: 'top-right',
-    })
-    superviz.addComponent(comments)
-  }, [])
+        buttonLocation: 'top-right',
+      })
+      room.addComponent(comments)
 
+    } catch (error) {
+      console.error("Error initializing SuperViz Room:", error);
+    }
+  }, []);
 
   const onDocumentLoadSuccess = useCallback(async (document: Autodesk.Viewing.Document) => {
     const viewable = document.getRoot().getDefaultGeometry();
@@ -53,7 +61,7 @@ export default function App() {
       })
 
       await initializeSuperViz()
-    } catch (error) { 
+    } catch (error) {
       console.log('Document loaded failed', error)
     }
 
@@ -70,7 +78,7 @@ export default function App() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
+        'Authorization': `Basic ${btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)}`
       },
       body: new URLSearchParams({
         grant_type: 'client_credentials',
@@ -99,10 +107,15 @@ export default function App() {
       viewer.setProgressiveRendering(true);
 
       autodeskViewer.current = viewer
-      window.Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+      window.Autodesk.Viewing.Document.load(DOCUMENT_ID, onDocumentLoadSuccess, onDocumentLoadFailure);
     })
 
   }, [onDocumentLoadSuccess])
+
+  useEffect(() => {
+    initializeAutodesk();
+  }, [initializeAutodesk]);
+
 
 
 
@@ -115,5 +128,7 @@ export default function App() {
         <div id='viewer' className='w-full h-full overflow-hidden absolute top-0 left-0 w-full! h-full! z-0'></div>
       </main>
     </div>
-  )
-}
+  );
+};
+
+export default App;

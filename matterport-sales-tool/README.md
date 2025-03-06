@@ -14,7 +14,7 @@ To begin, you'll need to set up a new React project where we will integrate Supe
 
 ### 1. Create a New React Project
 
-First, create a new React application using Vite with TypeScript.
+First, create a new React application using Create React App with TypeScript.
 
 ```bash
 npm create vite@latest matterport-sales-tool -- --template react-ts
@@ -26,14 +26,48 @@ cd matterport-sales-tool
 Next, install the necessary libraries for our project:
 
 ```bash
-npm install @superviz/sdk @superviz/matterport-plugin uuid
+npm install @superviz/room @superviz/matterport-plugin @superviz/video uuid
 ```
 
-- **@superviz/sdk:** SDK for integrating real-time collaboration features, including video conferencing and presence.
+- **@superviz/room:** Core package for creating and managing SuperViz rooms.
 - **@superviz/matterport-plugin:** Plugin for adding SuperViz presence and interaction features to a Matterport Viewer.
+- **@superviz/video:** Package for adding video conferencing capabilities.
 - **uuid:** A library for generating unique identifiers, useful for creating unique participant IDs.
 
-### 3. Set Up Environment Variables
+### 3. Configure tailwind
+
+In this tutorial, we'll use the [Tailwind css](tailwindcss.com) framework. First, install the tailwind package.
+
+```bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+We then need to configure the template path. Open `tailwind.config.js` in the root of the project and insert the following code.
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+content: [
+"./index.html",
+"./src/**/*.{js,ts,jsx,tsx}",
+],
+theme: {
+extend: {},
+},
+plugins: [],
+}
+```
+
+Then we need to add the tailwind directives to the global CSS file. (src/index.css)
+
+```javascript
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### 4. Set Up Environment Variables
 
 Create a `.env` file in your project root and add your SuperViz developer key and Matterport application key. These credentials will be used to authenticate your application with SuperViz and Matterport services.
 
@@ -53,11 +87,13 @@ In this step, we'll implement the main application logic to initialize SuperViz 
 Open `src/App.tsx` and set up the main application component using SuperViz to manage the collaborative environment.
 
 ```tsx
-import { v4 as generateId } from "uuid";
+import { Presence3D } from '@superviz/matterport-plugin';
+import { VideoHuddle } from "@superviz/video";
 import { useCallback, useEffect, useRef } from "react";
-import SuperVizRoom, { VideoConference } from "@superviz/sdk";
-import { Presence3D } from "@superviz/matterport-plugin";
-import type { MpSdk } from "@superviz/matterport-plugin/dist/common/types/matterport.types.d.ts";
+import { v4 as generateId } from 'uuid';
+// @ts-expect-error
+import type { MpSdk } from '@superviz/matterport-plugin/dist/common/types/matterport.types.d.ts';
+import { createRoom } from '@superviz/room';
 ```
 
 **Explanation:**
@@ -69,17 +105,22 @@ import type { MpSdk } from "@superviz/matterport-plugin/dist/common/types/matter
 Define constants for the API key, Matterport key, and room ID.
 
 ```tsx
-const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-const matterportKey = import.meta.env.VITE_MATTERPORT_KEY as string;
+// SuperViz developer token ::
+const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
+const MATTERPORT_KEY = import.meta.env.VITE_MATTERPORT_KEY as string
 
-const ROOM_ID = "matterport-sales-tool";
-const PLAYER_ID = generateId();
+const ROOM_ID = 'matterport-sales-tool'
+
+interface MatterportIframe extends HTMLIFrameElement {
+  window: Window & { MP_SDK: { connect: (window: Window, matterportKey: string) => Promise<MpSdk> } }
+}
 ```
 
 **Explanation:**
 
-- **apiKey & matterportKey:** Retrieves the SuperViz and Matterport API keys from environment variables.
-- **ROOM_ID & PLAYER_ID:** Defines the room ID for the SuperViz session and generates a unique player ID.
+- **DEVELOPER_TOKEN & MATTERPORT_KEY:** Retrieves the SuperViz and Matterport API keys from environment variables.
+- **ROOM_ID:** Defines the room ID for the SuperViz session.
+- **MatterportIframe interface:** Defines a TypeScript interface for the Matterport iframe element.
 
 ### 3. Create the App Component
 
@@ -87,11 +128,12 @@ Set up the main `App` component and initialize references for the Matterport SDK
 
 ```tsx
 export default function App() {
-  const matterportSDK = useRef<MpSdk | null>(null);
+  const matterportSDK = useRef<MpSdk | null>(null)
 
   useEffect(() => {
-    initializeMatterport();
-  }, []);
+    initializeMatterport()
+  }, [])
+}
 ```
 
 **Explanation:**
@@ -105,130 +147,112 @@ Create a function to initialize the SuperViz environment and integrate presence 
 
 ```tsx
 const initializeSuperViz = useCallback(async () => {
-  const superviz = await SuperVizRoom(apiKey, {
-    roomId: ROOM_ID,
-    participant: {
-      id: PLAYER_ID,
-      name: "player-name",
-    },
-    group: {
-      id: "matterport-sales-tool",
-      name: "matterport-sales-tool",
-    },
-  });
+  try {
+    const room = await createRoom({
+      developerToken: DEVELOPER_TOKEN,
+      roomId: ROOM_ID,
+      participant: {
+        id: generateId(),
+        name: " ",
+      },
+      group: {
+        id: "GROUP_ID",
+        name: "GROUP_NAME",
+      },
+    });
 
-  const presence = new Presence3D(matterportSDK.current!);
-  superviz.addComponent(presence);
+    const presence = new Presence3D(matterportSDK.current!)
+    room.addComponent(presence)
 
-  const video = new VideoConference({
-    enableFollow: true,
-    enableGather: true,
-    enableGoTo: true,
-    userType: "host",
-  });
+    const video = new VideoHuddle({
+      participantType: "host",
+    });
 
-  superviz.addComponent(video);
-}, []);
+   room.addComponent(video);
+  } catch (error) {
+    console.error("Error initializing SuperViz Room:", error);
+  }
+}, [])
 ```
 
 **Explanation:**
 
-- **initializeSuperViz:** An asynchronous function that initializes the SuperViz room, adds the presence component to track user interactions within the 3D space, and integrates video conferencing.
-- **Presence3D:** Manages real-time presence in the Matterport space, showing where each participant is looking or interacting.
-- **VideoConference:** Adds video conferencing with features like follow, gather, and go-to, enhancing the collaborative experience.
+- **initializeSuperViz:** A function that creates a SuperViz room and adds presence and video components.
+- **createRoom:** Creates a new SuperViz room with the specified configuration.
+- **Presence3D:** Adds 3D presence to the Matterport viewer, allowing users to see each other in the 3D space.
+- **VideoHuddle:** Adds video conferencing capabilities to the application.
 
-### 5. Initialize Matterport Viewer
+### 5. Initialize Matterport
 
-Create a function to initialize the Matterport Viewer with the necessary credentials and configurations.
+Create a function to initialize the Matterport viewer and connect it to the SuperViz environment.
 
 ```tsx
 const initializeMatterport = useCallback(async () => {
-  const showcase = document.getElementById("showcase") as MatterportIframe;
-  const showcaseWindow = showcase.contentWindow as MatterportIframe["window"];
-  const source = `/vendor/matterport/showcase.html?&play=1&qs=1&applicationKey=${matterportKey}&m=Zh14WDtkjdC`;
-  showcase.setAttribute("src", source);
+  const showcase = document.getElementById('showcase') as MatterportIframe
+  const showcaseWindow = showcase.contentWindow as MatterportIframe['window']
+  const source = `/vendor/matterport/showcase.html?&play=1&qs=1&applicationKey=${MATTERPORT_KEY}&m=5m4i274y1aV`;
+  showcase.setAttribute('src', source);
 
   await new Promise((resolve) => {
-    showcase.addEventListener("load", async () => {
-      matterportSDK.current = await showcaseWindow?.MP_SDK.connect(
-        showcaseWindow,
-        matterportKey
-      );
+    showcase.addEventListener('load', async () => {
+      matterportSDK.current = await showcaseWindow?.MP_SDK.connect(showcaseWindow, MATTERPORT_KEY);
       resolve(matterportSDK.current);
     });
   });
 
-  initializeSuperViz();
-}, [initializeSuperViz]);
+  initializeSuperViz()
+}, [initializeSuperViz])
 ```
 
 **Explanation:**
 
-- **initializeMatterport:** Loads the Matterport Viewer in an iframe, connects the Matterport SDK, and then initializes SuperViz for real-time collaboration.
-- **initializeSuperViz:** Called after Matterport is initialized to set up presence and video conferencing.
+- **initializeMatterport:** A function that initializes the Matterport viewer and connects it to the SuperViz environment.
+- **showcase:** Gets the Matterport iframe element from the DOM.
+- **source:** Sets the source URL for the Matterport viewer, including the Matterport key and model ID.
+- **addEventListener:** Waits for the iframe to load, then connects to the Matterport SDK.
+- **initializeSuperViz:** Calls the function to initialize SuperViz after Matterport is ready.
 
----
+### 6. Render the Application
 
-### Step 3: Render the Application
-
-Finally, return the JSX structure for rendering the Matterport Viewer and the SuperViz-powered interface.
+Return the JSX structure for rendering the application, including the Matterport iframe.
 
 ```tsx
 return (
-  <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
-    <header className="w-full p-5 bg-purple-400 flex items-center justify-between">
-      <h1 className="text-white text-2xl font-bold">
-        SuperViz Matterport Sales Tool
-      </h1>
-    </header>
-    <main className="w-full h-full flex items-center justify-center relative">
-      <iframe id="showcase" className="w-full h-full" />
+  <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
+    <main className='w-full h-full flex items-center justify-center relative'>
+      <iframe id='showcase' className='w-full h-full' />
     </main>
   </div>
-);
+)
 ```
 
 **Explanation:**
 
-- **Viewer Container:** The `showcase` iframe is where the Matterport Viewer will be rendered, filling the entire screen. This is where users will interact with the 3D space and collaborate in real time.
+- **div:** A container for the application with full width and height.
+- **main:** A container for the Matterport iframe.
+- **iframe:** The Matterport viewer iframe with the ID 'showcase'.
 
 ---
 
-### Step 4: Understanding the Project Structure
-
-Here's a quick overview of how the project structure supports a Matterport sales tool:
-
-1. **`App.tsx`**
-   - Initializes the SuperViz environment.
-   - Sets up the Matterport Viewer with real-time presence and video conferencing features.
-   - Handles the loading of 3D spaces and integration of collaborative tools.
-2. **Matterport Viewer**
-   - Renders the 3D space, allowing users to navigate, inspect, and collaborate in a shared virtual environment.
-3. **SuperViz Components**
-   - **Presence3D:** Displays real-time presence information, showing where each participant is looking or interacting in the 3D space.
-   - **VideoConference:** Enables video communication within the 3D space, supporting collaborative sales presentations and discussions.
-
----
-
-### Step 5: Running the Application
+### Step 3: Running the Application
 
 ### 1. Start the React Application
 
 To run your application, use the following command in your project directory:
 
 ```bash
-npm start
+npm run dev
 ```
-
-This command will start the development server and open your application in the default web browser. You can interact with the 3D space and see real-time presence and video conferencing from other participants.
+This command will start the development server and open your application in the default web browser. You can navigate the Matterport 3D space and invite other participants to join.
 
 ### 2. Test the Application
 
-- **Real-Time Presence:** Open the application in multiple browser windows or tabs to simulate multiple participants and verify that presence information is updated in real-time.
-- **Collaborative Interaction:** Test the video conferencing feature by starting a call within the 3D space and interacting with participants.
+- **3D Navigation:** Navigate through the Matterport 3D space using the standard Matterport controls.
+- **Presence:** When multiple users join, you'll see their avatars in the 3D space.
+- **Video Conference:** Use the video conference feature to communicate with other participants.
+
+---
 
 ### Summary
 
-In this tutorial, we built a Matterport sales tool using SuperViz for real-time collaboration. We configured a React application to handle 3D space navigation and video conferencing, enabling multiple users to engage in a collaborative sales presentation seamlessly. This setup can be extended and customized to fit various scenarios where real-time collaboration on 3D spaces is required.
-
-Feel free to explore the full code and further examples in the [GitHub repository](https://github.com/SuperViz/tutorials/tree/main/matterport-sales-tool) for more details.
+In this tutorial, we integrated Matterport with SuperViz to create a powerful sales tool. We configured a React application to handle 3D presence and video conferencing within a Matterport environment, enabling multiple users to navigate and interact in a 3D space together. This setup can be extended and customized to fit various scenarios where collaborative 3D exploration is required.

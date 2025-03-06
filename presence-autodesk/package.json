@@ -10,8 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@superviz/autodesk-viewer-plugin": "^1.22.0",
-    "@superviz/sdk": "^6.7.0",
+    "@superviz/autodesk-viewer-plugin": "^1.23.0",
+    "@superviz/room": "^1.0.0",
+    "@superviz/collaboration": "^1.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "uuid": "^10.0.0"

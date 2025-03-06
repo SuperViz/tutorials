@@ -268,5 +268,3 @@ This command will start the development server and open your application in the 
 ### Summary
 
 In this tutorial, we implemented real-time mouse pointers and an optional video huddle feature in a web application using SuperViz. We used the @superviz/room package to create and manage the room, the @superviz/collaboration package for mouse pointers, and the @superviz/video package for video conferencing. This setup provides a powerful foundation for collaborative applications where users need to see each other's interactions and communicate in real-time.
-
-Feel free to explore the full code and further examples in the [GitHub repository](https://github.com/SuperViz/tutorials/tree/main/mouse-pointers) for more details.
