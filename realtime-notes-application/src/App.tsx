@@ -28,7 +28,7 @@ export default function App() {
         developerToken: DEVELOPER_TOKEN,
         roomId: ROOM_ID,
         participant: {
-          id: generateId(),
+          id: PARTICIPANT_ID,
           name: "Participant",
         },
         group: {
@@ -37,6 +37,12 @@ export default function App() {
         },
       });
 
+
+      const mousePointers = new MousePointers("mouse-container");
+      const whoIsOnline = new WhoIsOnline();
+      room.addComponent(mousePointers);
+      room.addComponent(whoIsOnline);
+
       const realtime = new Realtime(DEVELOPER_TOKEN, {
         participant: {
           id: PARTICIPANT_ID,
@@ -44,11 +50,8 @@ export default function App() {
       });
 
       channel.current = await realtime.connect("realtime-sync");
-
       channel.current.subscribe<Note>("note-change", (event) => {
         const note = event.data;
-
-
 
         if (event.participantId === PARTICIPANT_ID || !note) return;
 
@@ -62,11 +65,6 @@ export default function App() {
           });
         });
       });
-
-      const mousePointers = new MousePointers("mouse-container");
-      const whoIsOnline = new WhoIsOnline();
-      room.addComponent(mousePointers);
-      room.addComponent(whoIsOnline);
 
       setInitialized(true);
       setNotes([
@@ -111,8 +109,6 @@ export default function App() {
         return n;
       });
     });
-
-    console.log("channel.current", channel.current);
 
     if (channel.current) {
       channel.current.publish("note-change", note);
