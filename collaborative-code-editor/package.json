@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
-    "@superviz/sdk": "^6.7.0",
-    "@superviz/yjs": "^1.0.0",
+    "@superviz/collaboration": "^1.0.1",
+    "@superviz/room": "^1.0.0",
+    "@superviz/video": "^1.0.3",
+    "@superviz/yjs": "^1.1.0",
     "monaco-editor": "^0.52.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

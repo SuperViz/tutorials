@@ -1,54 +1,82 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { v4 as generateId } from "uuid";
 
 import * as Y from "yjs";
-
 import { SuperVizYjsProvider } from "@superviz/yjs";
+import { createRoom, Room } from "@superviz/room";
+import { VideoHuddle } from "@superviz/video";
 
 import { MonacoBinding } from "y-monaco";
-import SuperVizRoom, {
-  type LauncherFacade,
-  type Participant,
-} from "@superviz/sdk";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
-import { setColors } from "./setColors";
 
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
 
 const ROOM_ID = "collaborative-code-editor";
 const PLAYER_ID = generateId();
 
+function setStyles(
+  states: Map<number, Record<string, any>>,
+  ids: Set<number>
+): number[] {
+  const stylesheet = document.getElementById("sv-yjs-monaco");
+  let styles = "";
+
+  const idsList = [];
+  for (const [id, state] of states) {
+    if (ids.has(id) || !state.participant) continue;
+    idsList.push(id);
+
+    styles += `
+      .yRemoteSelection-${id},
+      .yRemoteSelectionHead-${id}  {
+        --presence-color: ${state.participant.slot.color};
+        }
+        
+        .yRemoteSelectionHead-${id}:after {
+          content: "${state.participant.name}";
+          --sv-text-color: ${state.participant.slot.textColor};
+      }
+    `;
+  }
+
+  stylesheet!.innerText = styles;
+
+  return idsList;
+}
+
 const ydoc = new Y.Doc();
 const provider = new SuperVizYjsProvider(ydoc);
 
 export default function App() {
-  const initialized = useRef(false);
   const [editor, setEditor] = useState<any>(null);
   const [ids, setIds] = useState(new Set<number>());
-  const room = useRef<LauncherFacade>();
 
-  const initialize = useCallback(async () => {
-    if (initialized.current) return;
-    initialized.current = true;
+  const room = useRef<Room>();
+  const video = useRef<VideoHuddle>();
+  const loaded = useRef(false);
 
-    const superviz = await SuperVizRoom(apiKey, {
+  const initializeSuperViz = useCallback(async () => {
+    if (loaded.current) return;
+    loaded.current = true;
+
+    room.current = await createRoom({
+      developerToken: apiKey,
       roomId: ROOM_ID,
       participant: {
+        name: '-',
         id: PLAYER_ID,
-        name: "player-name",
       },
       group: {
-        id: "chess-game",
-        name: "chess-game",
+        name: "collaborative-code-editor-group",
+        id: "collaborative-code-editor-group",
       },
-      environment: "dev",
-      debug: true,
     });
 
-    superviz.addComponent(provider);
+    video.current = new VideoHuddle({
+      participantType: "host",
+    });
 
-    superviz.subscribe("participant.updated", (data: Participant) => {
+    room.current.subscribe("my-participant.updated", (data) => {
       if (!data.slot?.index) return;
 
       provider.awareness?.setLocalStateField("participant", {
@@ -58,37 +86,37 @@ export default function App() {
       });
     });
 
-    const updateStyles = () => {
-      const states = provider.awareness?.getStates();
-      const idsList = setColors(states, ids);
-
-      setIds(new Set(idsList));
-    };
-
-    provider.once("connect", updateStyles);
-    provider.awareness?.once("change", updateStyles);
-    provider.awareness?.on("update", updateStyles);
-
     const style = document.createElement("style");
     style.id = "sv-yjs-monaco";
     document.head.appendChild(style);
 
-    return superviz;
-  }, [initialized, ids]);
+    const updateStyles = () => {
+      const states = provider.awareness?.getStates();
+      const idsList = setStyles(states, ids);
+
+      setIds(new Set(idsList));
+    };
+
+    provider.on("connect", updateStyles);
+    provider.awareness?.on("update", updateStyles);
+    provider.awareness?.on("change", updateStyles);
+
+    room.current.addComponent(provider);
+    room.current.addComponent(video.current);
+  }, [provider.awareness]);
 
   useEffect(() => {
-    (async () => {
-      room.current = await initialize();
-    })();
+    initializeSuperViz();
 
     return () => {
+      room.current?.removeComponent(video.current);
       room.current?.removeComponent(provider);
-      room.current?.destroy();
+      room.current?.leave();
     };
-  }, [initialize]);
+  }, [initializeSuperViz]);
 
   useEffect(() => {
-    if (!provider || editor == null) return;
+    if (editor == null) return;
 
     const binding = new MonacoBinding(
       ydoc.getText("monaco"),
@@ -96,6 +124,7 @@ export default function App() {
       new Set([editor]),
       provider.awareness
     );
+
     return () => {
       binding.destroy();
     };
