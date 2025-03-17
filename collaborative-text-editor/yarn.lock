@@ -643,7 +643,7 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz#821f8442f4175d8f0467b9daf26e3a18e2d02af2"
   integrity sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==
 
-"@superviz/room@1.0.0", "@superviz/room@^1.0.0":
+"@superviz/room@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@superviz/room/-/room-1.0.0.tgz#4200d711a0740ba5dc94e1099d0bb0aaf2fb5259"
   integrity sha512-ZC/Sqvm1g1Rli7iau0N5n8tTQl8bQDqcEyfbOMEFkgBe2O+JEtUGOJTpNvHG39BqtFD99nBwjdkUnSHvmWoyRg==
@@ -664,31 +664,6 @@
     lodash "^4.17.21"
     rxjs "^7.8.1"
     socket.io-client "^4.7.5"
-    zod "^3.23.8"
-
-"@superviz/socket-client@1.16.3":
-  version "1.16.3"
-  resolved "https://registry.yarnpkg.com/@superviz/socket-client/-/socket-client-1.16.3.tgz#7ce42169f0d6e81a5a584373028db4ada6d239bb"
-  integrity sha512-U6BPokOOb2Oc5EgfXBlcD9vQmv4fstZos5SIIAbzddGRVVXHQTKyYnzCZKpngZ9S1JM9vBPf9ikSsG39N3pL5A==
-  dependencies:
-    "@reactivex/rxjs" "^6.6.7"
-    debug "^4.3.5"
-    lodash "^4.17.21"
-    rxjs "^7.8.1"
-    socket.io-client "^4.7.5"
-    zod "^3.23.8"
-
-"@superviz/video@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@superviz/video/-/video-1.0.3.tgz#edbdca99fbeb2e50da8c9ba0f2bb0159989f7b3b"
-  integrity sha512-aJlOP/mV5riq5gfJgBOvZB88DaUX3qSYbRaaU1umEblwA7SJjpkLGjTrhw7ORaNAa/4oTs//8ginX5eJZX9/Nw==
-  dependencies:
-    "@superviz/room" "1.0.0"
-    "@superviz/socket-client" "1.16.3"
-    bowser "^2.11.0"
-    debug "^4.3.4"
-    lodash "^4.17.21"
-    rxjs "^7.8.1"
     zod "^3.23.8"
 
 "@superviz/yjs@^1.1.0":
@@ -910,11 +885,6 @@ balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
-
-bowser@^2.11.0:
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/bowser/-/bowser-2.11.0.tgz#5ca3c35757a7aa5771500c70a73a9f91ef420a8f"
-  integrity sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
