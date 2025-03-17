@@ -83,7 +83,7 @@ const Children = () => {
     try {
       const participantId = generateId();
       const realtime = new Realtime(DEVELOPER_TOKEN, {
-        participant: { 
+        participant: {
           id: participantId
         },
       });
@@ -93,16 +93,16 @@ const Children = () => {
         "new-edge",
         ({ data, participantId: senderId }) => {
           if (senderId === participantId) return;
-  
+
           setEdges((eds) => addEdge(data.edge, eds));
         }
       );
-  
+
       channelRef.current!.subscribe<{ node: Node }>(
         "node-drag",
         ({ data, participantId: senderId }) => {
           if (senderId === participantId) return;
-  
+
           setNodes((nds) =>
             nds.map((node) =>
               node.id === data.node.id ? { ...node, ...data.node } : node
@@ -125,7 +125,7 @@ const Children = () => {
       });
 
       mousePointersRef.current = new MousePointers('react-flow-container')
-      const pin = new HTMLPin('react-flow-container', { 
+      const pin = new HTMLPin('react-flow-container', {
         dataAttributeName: "data-id",
         dataAttributeValueFilters: [/.*null-(target|source)$/],
       })
@@ -192,17 +192,17 @@ const Children = () => {
   useEffect(() => {
     initialize();
 
-    return () => { 
-      if(roomRef.current) { 
+    return () => {
+      if(roomRef.current) {
         roomRef.current.leave();
       }
 
-      if(channelRef.current) { 
+      if(channelRef.current) {
         channelRef.current.disconnect()
       }
     }
   }, []);
-  
+
 
   return (
     <div className="w-full h-full bg-gray-200 flex items-center justify-center flex-col">
