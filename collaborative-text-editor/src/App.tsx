@@ -5,7 +5,6 @@ import { SuperVizYjsProvider } from "@superviz/yjs";
 import { createRoom, type Room, type Participant } from "@superviz/room";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { VideoHuddle } from "@superviz/video";
 import ReactQuill, { Quill } from "react-quill-new";
 import { QuillBinding } from "y-quill";
 import QuillCursors from "quill-cursors";
@@ -51,7 +50,6 @@ export default function App() {
   const room = useRef<Room>();
   const quillRef = useRef<ReactQuill | null>(null);
   const loaded = useRef(false);
-  const video = useRef<VideoHuddle>();
   const initializeSuperViz = useCallback(async () => {
     if (loaded.current) return;
     loaded.current = true;
@@ -61,7 +59,7 @@ export default function App() {
       roomId: ROOM_ID,
       participant: {
         id: PLAYER_ID,
-        name: " ",
+        name: "Name " + Math.floor(Math.random() * 10),
       },
       group: {
         id: "text-editor",
@@ -94,12 +92,9 @@ export default function App() {
     provider.awareness?.on("update", updateStyles);
     provider.awareness?.once("change", updateStyles);
 
-    video.current = new VideoHuddle({
-      participantType: "host",
-    });
+
 
     room.current.addComponent(provider);
-    room.current.addComponent(video.current);
   }, [provider.awareness]);
 
   useEffect(() => {
@@ -108,7 +103,6 @@ export default function App() {
     return () => {
       if (room.current) {
         room.current.removeComponent(provider);
-        room.current.removeComponent(video.current);
         room.current.leave();
       }
     };

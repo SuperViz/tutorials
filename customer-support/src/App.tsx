@@ -1,75 +1,90 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import SuperVizRoom, { FormElements, VideoConference, LauncherFacade } from '@superviz/sdk'
-import { v4 as generateId } from 'uuid'
+import { FormElements } from "@superviz/collaboration";
+import { createRoom, Room } from "@superviz/room";
+import { VideoEvent, VideoHuddle } from "@superviz/video";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IoIosCall } from "react-icons/io";
+import { v4 as generateId } from 'uuid';
 
-const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string
-const ROOM_ID = 'customer-support'
+// SuperViz developer token ::
+const DEVELOPER_TOKEN = import.meta.env.VITE_SUPERVIZ_API_KEY;
 
 export default function App() {
-  const [initialized, setInitialized] = useState(false)
-  const superviz = useRef<LauncherFacade | null>(null)
+  // States ::
+  const [huddleStarted, setHuddleStarted] = useState(false);
 
-  const initialize = useCallback(async () => { 
-    if(initialized) return
+  const roomRef = useRef<Room | null>(null);
 
-    superviz.current = await SuperVizRoom(apiKey, {
-      roomId: ROOM_ID,
-      participant: { 
-        id: generateId(),
-        name: 'participant-name',
-      },
-      group: { 
-        id: 'customer-support',
-        name: 'customer-support',
-      }
-    })
+  // Initialize ::
+  const initialize = useCallback(async () => {
+    try {
+      const room = await createRoom({
+        developerToken: DEVELOPER_TOKEN,
+        roomId: "ROOM_ID",
+        participant: {
+          id: generateId(),
+          name: "Name " + Math.floor(Math.random() * 10),
+        },
+        group: {
+          id: "GROUP_ID",
+          name: "GROUP_NAME",
+        },
+      });
 
-    const formElements = new FormElements({
-      fields: [
-        'name', 
-        'email',
-        'company',
-        'role',
-      ]
-    })
+      // Store the room instance in the ref
+      roomRef.current = room;
 
-    superviz.current.addComponent(formElements)
+      const formElements = new FormElements({
+        fields: [
+          'name',
+          'email',
+          'company',
+          'role',
+        ]
+      })
 
-    setInitialized(true)
-  }, [initialized])
+      room.addComponent(formElements)
 
-  const initializeVideo = useCallback(() => { 
-    if(!initialized || !superviz.current) return
 
-    const video = new VideoConference({
-      participantType: 'host',
-      collaborationMode: { 
-        enabled: true,
-      }
-    })
-
-    superviz.current.addComponent(video)
-  }, [initialized])
+    } catch (error) {
+      console.error("Error initializing SuperViz Room:", error);
+    }
+  }, []);
 
   useEffect(() => {
-    initialize()
-  })
+    initialize();
+  }, [initialize]);
+
+  const startHuddle = async () => {
+    const video = new VideoHuddle({
+      participantType: "host",
+    });
+
+    video.subscribe(VideoEvent.MY_PARTICIPANT_JOINED, () =>
+      setHuddleStarted(true)
+    );
+
+    // Use the room instance from the ref
+    if (roomRef.current) {
+      roomRef.current.addComponent(video);
+    }
+  };
 
   return (
     <>
       <div className='w-full h-full bg-gray-200 flex items-center justify-center flex-col'>
         <header className='w-full p-5 bg-purple-400 flex items-center justify-between'>
           <h1 className='text-white text-2xl font-bold'>Customer Support</h1>
-          <button className="rounded-full bg-green-400 p-3 text-white text-lg" onClick={initializeVideo}>
-            <IoIosCall />
-          </button>
+          {!huddleStarted && (
+            <button className="rounded-full bg-green-400 p-3 text-white text-lg" onClick={startHuddle}>
+              <IoIosCall />
+            </button>
+          )}
         </header>
         <main className='flex-1 p-20 flex w-full gap-2 items-center justify-center'>
           <form className="min-w-[500px] bg-white rounded-lg border border-solid border-gray-300 p-6 flex flex-col gap-6">
             <div>
               <label htmlFor='name' className='text-md font-bold'>Name</label>
-              <input 
+              <input
                 type='text'
                 id='name'
                 name='name'
@@ -79,7 +94,7 @@ export default function App() {
             </div>
             <div>
               <label htmlFor='email' className='text-md font-bold'>Email</label>
-              <input 
+              <input
                 type='text'
                 id='email'
                 name='email'
@@ -89,7 +104,7 @@ export default function App() {
             <div className="flex gap-2">
               <div>
                 <label htmlFor='company' className='text-md font-bold'>Company</label>
-                <input 
+                <input
                   type='text'
                   id='company'
                   name='company'
@@ -98,7 +113,7 @@ export default function App() {
               </div>
               <div>
                 <label htmlFor='role' className='text-md font-bold'>Role</label>
-                <input 
+                <input
                   type='text'
                   id='role'
                   name='role'
@@ -106,8 +121,8 @@ export default function App() {
                   className='w-full p-3 border border-gray-300 rounded-md' />
               </div>
             </div>
-            
-            <button 
+
+            <button
               type='button'
               className='bg-purple-400 text-white p-3 rounded-md disabled:bg-gray-300'
             >
