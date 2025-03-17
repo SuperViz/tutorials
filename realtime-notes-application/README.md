@@ -427,4 +427,3 @@ This command will start the development server and open your application in the 
 ### Summary
 
 In this tutorial, we built a collaborative notes application using SuperViz for real-time synchronization. We used the @superviz/room package to create a room, the @superviz/collaboration package for mouse pointers and who-is-online features, and the @superviz/realtime package for synchronizing note changes between participants. This setup enables multiple users to collaborate seamlessly on shared notes, seeing each other's edits in real-time.
-
