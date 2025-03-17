@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@superviz/react-sdk": "^1.14.0",
+    "@superviz/room": "^1.0.0",
+    "@superviz/collaboration": "^1.0.0",
+    "@superviz/video": "^1.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "uuid": "^10.0.0"

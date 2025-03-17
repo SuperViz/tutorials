@@ -1,60 +1,76 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { v4 as generateId } from "uuid";
-
 import * as Y from "yjs";
-
 import { SuperVizYjsProvider } from "@superviz/yjs";
+import { createRoom, type Room, type Participant } from "@superviz/room";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import SuperVizRoom, {
-  type LauncherFacade,
-  type Participant,
-} from "@superviz/sdk";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { setColors } from "./setColors";
-
+import { VideoHuddle } from "@superviz/video";
 import ReactQuill, { Quill } from "react-quill-new";
 import { QuillBinding } from "y-quill";
 import QuillCursors from "quill-cursors";
+import "react-quill-new/dist/quill.snow.css";
 
-// import "react-quill-new/dist/quill.snow.css";
-
+// Constants
 const apiKey = import.meta.env.VITE_SUPERVIZ_API_KEY as string;
-
 const ROOM_ID = "collaborative-text-editor";
 const PLAYER_ID = generateId();
 
-const ydoc = new Y.Doc();
-const provider = new SuperVizYjsProvider(ydoc);
-
 Quill.register("modules/cursors", QuillCursors);
 
+function setStyles(
+  states: Map<number, Record<string, any>>,
+  ids: Set<number>
+): number[] {
+  const stylesheet = document.getElementById("sv-yjs-quill");
+  let styles = "";
+
+  const idsList = [];
+  for (const [id, state] of states) {
+    if (ids.has(id) || !state.participant) continue;
+    idsList.push(id);
+
+    styles += `
+      #ql-cursor-${id} {
+        --presence-color: ${state.participant.slot.color};
+        --sv-text-color: ${state.participant.slot.textColor};
+      }
+    `;
+  }
+
+  stylesheet!.innerText = styles;
+  return idsList;
+}
+
 export default function App() {
-  const initialized = useRef(false);
+  const ydoc = useMemo(() => new Y.Doc(), []);
+  const provider = useMemo(() => new SuperVizYjsProvider(ydoc), [ydoc]);
+
   const [ids, setIds] = useState(new Set<number>());
-  const room = useRef<LauncherFacade>();
+
+  const room = useRef<Room>();
   const quillRef = useRef<ReactQuill | null>(null);
+  const loaded = useRef(false);
+  const video = useRef<VideoHuddle>();
+  const initializeSuperViz = useCallback(async () => {
+    if (loaded.current) return;
+    loaded.current = true;
 
-  const initialize = useCallback(async () => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    const superviz = await SuperVizRoom(apiKey, {
+    room.current = await createRoom({
+      developerToken: apiKey,
       roomId: ROOM_ID,
       participant: {
         id: PLAYER_ID,
-        name: "player-name",
+        name: " ",
       },
       group: {
-        id: "chess-game",
-        name: "chess-game",
+        id: "text-editor",
+        name: "text-editor",
       },
-      environment: "dev",
-      debug: true,
     });
 
-    superviz.addComponent(provider);
 
-    superviz.subscribe("participant.updated", (data: Participant) => {
+    room.current.subscribe("my-participant.updated", (data: Participant) => {
       if (!data.slot?.index) return;
 
       provider.awareness?.setLocalStateField("participant", {
@@ -64,29 +80,39 @@ export default function App() {
       });
     });
 
-    const updateStyles = () => {
-      const states = provider.awareness?.getStates();
-      const idsList = setColors(states, ids);
-
-      setIds(new Set(idsList));
-    };
-
-    provider.once("connect", updateStyles);
-    provider.awareness?.once("change", updateStyles);
-    provider.awareness?.on("update", updateStyles);
-
     const style = document.createElement("style");
     style.id = "sv-yjs-quill";
     document.head.appendChild(style);
 
-    return superviz;
-  }, [initialized, ids]);
+    const updateStyles = () => {
+      const states = provider.awareness?.getStates();
+      const idsList = setStyles(states, ids);
+      setIds(new Set(idsList));
+    };
+
+    provider.on("connect", updateStyles);
+    provider.awareness?.on("update", updateStyles);
+    provider.awareness?.once("change", updateStyles);
+
+    video.current = new VideoHuddle({
+      participantType: "host",
+    });
+
+    room.current.addComponent(provider);
+    room.current.addComponent(video.current);
+  }, [provider.awareness]);
 
   useEffect(() => {
-    (async () => {
-      room.current = await initialize();
-    })();
-  }, []);
+    initializeSuperViz();
+
+    return () => {
+      if (room.current) {
+        room.current.removeComponent(provider);
+        room.current.removeComponent(video.current);
+        room.current.leave();
+      }
+    };
+  }, [initializeSuperViz, provider]);
 
   useEffect(() => {
     if (!provider || !quillRef.current) return;
@@ -106,7 +132,8 @@ export default function App() {
     <div className="p-5 h-full bg-gray-200 flex flex-col gap-5">
       <div className="bg-[#1e1e1e] shadow-none h-[90%] overflow-auto rounded-sm">
         <ReactQuill
-          placeholder="// Connect to the room to start collaborating"
+          className="h-full"
+          placeholder="Start typing..."
           ref={quillRef}
           theme="snow"
           modules={{

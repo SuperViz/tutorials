@@ -41,14 +41,10 @@ export const Children = () => {
           id: "GROUP_ID",
         },
         roomId: `ROOM_ID`,
-        environment: "dev",
       });
 
       const video = new VideoHuddle({
         participantType: 'host',
-        brand: {
-          logoUrl: "https://docs.superviz.com/logo-white.svg",
-        },
       });
 
       addComponent(video);
