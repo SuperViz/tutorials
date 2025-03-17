@@ -1,10 +1,7 @@
 import { v4 as generateId } from "uuid";
-
 import * as Y from "yjs";
 import { SuperVizYjsProvider } from "@superviz/yjs";
 import { createRoom, Room } from "@superviz/room";
-import { VideoHuddle } from "@superviz/video";
-
 import { MonacoBinding } from "y-monaco";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
@@ -31,7 +28,7 @@ function setStyles(
       .yRemoteSelectionHead-${id}  {
         --presence-color: ${state.participant.slot.color};
         }
-        
+
         .yRemoteSelectionHead-${id}:after {
           content: "${state.participant.name}";
           --sv-text-color: ${state.participant.slot.textColor};
@@ -52,7 +49,6 @@ export default function App() {
   const [ids, setIds] = useState(new Set<number>());
 
   const room = useRef<Room>();
-  const video = useRef<VideoHuddle>();
   const loaded = useRef(false);
 
   const initializeSuperViz = useCallback(async () => {
@@ -63,17 +59,13 @@ export default function App() {
       developerToken: apiKey,
       roomId: ROOM_ID,
       participant: {
-        name: '-',
+        name: "Name " + Math.floor(Math.random() * 10),
         id: PLAYER_ID,
       },
       group: {
         name: "collaborative-code-editor-group",
         id: "collaborative-code-editor-group",
       },
-    });
-
-    video.current = new VideoHuddle({
-      participantType: "host",
     });
 
     room.current.subscribe("my-participant.updated", (data) => {
@@ -102,14 +94,12 @@ export default function App() {
     provider.awareness?.on("change", updateStyles);
 
     room.current.addComponent(provider);
-    room.current.addComponent(video.current);
   }, [provider.awareness]);
 
   useEffect(() => {
     initializeSuperViz();
 
     return () => {
-      room.current?.removeComponent(video.current);
       room.current?.removeComponent(provider);
       room.current?.leave();
     };
